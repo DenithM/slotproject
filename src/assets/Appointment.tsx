@@ -21,6 +21,7 @@ const Appointment: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [unavailableSlots, setUnavailableSlots] = useState<string[]>([]);
   const [formData, setFormData] = useState<AppointmentFormData>({
     doctorId: '',
     date: '',
@@ -47,10 +48,7 @@ const Appointment: React.FC<{ onBack: () => void }> = ({ onBack }) => {
         console.error('Error fetching doctors:', error);
         
         setDoctors([
-          { id: '1', name: 'Dr. James Carter', specialization: 'Cardiologist', avatar: '👨‍⚕️', available: true },
-          { id: '2', name: 'Dr. Kelli Jener', specialization: 'Neurologist', avatar: '👩‍⚕️', available: true },
-          { id: '3', name: 'Dr. Mike Wise', specialization: 'Therapist', avatar: '👨‍⚕️', available: true },
-          { id: '4', name: 'Dr. Saim Perterson', specialization: 'Dentist', avatar: '👩‍⚕️', available: true },
+          
         ]);
       } else {
         setDoctors(data || []);
@@ -63,12 +61,70 @@ const Appointment: React.FC<{ onBack: () => void }> = ({ onBack }) => {
     }
   };
 
+  const checkDoctorAvailability = async (doctorId: string, date: string, time: string): Promise<boolean> => {
+    try {
+      const { data, error } = await supabase
+        .from('appointments')
+        .select('*')
+        .eq('doctor_id', doctorId)
+        .eq('date', date)
+        .eq('time', time)
+        .eq('status', 'scheduled');
+
+      if (error) {
+        console.error('Error checking availability:', error);
+        return false;
+      }
+
+      return (data || []).length === 0;
+    } catch (error) {
+      console.error('Error:', error);
+      return false;
+    }
+  };
+
+  const getUnavailableSlots = async (doctorId: string, date: string) => {
+    if (!doctorId || !date) {
+      setUnavailableSlots([]);
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('appointments')
+        .select('time')
+        .eq('doctor_id', doctorId)
+        .eq('date', date)
+        .eq('status', 'scheduled');
+
+      if (error) {
+        console.error('Error fetching unavailable slots:', error);
+        setUnavailableSlots([]);
+      } else {
+        const slots = (data || []).map(apt => apt.time);
+        setUnavailableSlots(slots);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      setUnavailableSlots([]);
+    }
+  };
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
       [name]: value
     }));
+
+    // Fetch unavailable slots when doctor or date changes
+    if (name === 'doctorId' || name === 'date') {
+      const newFormData = { ...formData, [name]: value };
+      getUnavailableSlots(
+        name === 'doctorId' ? value : newFormData.doctorId,
+        name === 'date' ? value : newFormData.date
+      );
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -78,11 +134,34 @@ const Appointment: React.FC<{ onBack: () => void }> = ({ onBack }) => {
     setSuccessMessage('');
 
     try {
+      // Check if doctor is available at the selected date and time
+      const isAvailable = await checkDoctorAvailability(formData.doctorId, formData.date, formData.time);
       
+      if (!isAvailable) {
+        setErrorMessage('This doctor is already booked at the selected time. Please choose a different time slot.');
+        setSubmitting(false);
+        return;
+      }
+
+      // Get the current patient (using the same logic as Dashboard)
+      const userEmail = 'denithrokith@gmail.com'; // This should come from auth context
+      const { data: patientData, error: patientError } = await supabase
+        .from('patients')
+        .select('id')
+        .eq('email', userEmail)
+        .single();
+
+      if (patientError || !patientData) {
+        setErrorMessage('Patient profile not found. Please complete your patient information first.');
+        setSubmitting(false);
+        return;
+      }
+
       const { error } = await supabase
         .from('appointments')
         .insert([
           {
+            patient_id: patientData.id,
             doctor_id: formData.doctorId,
             date: formData.date,
             time: formData.time,
@@ -230,12 +309,25 @@ const Appointment: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     >
                       <option value="">Select time...</option>
-                      {timeSlots.map((time) => (
-                        <option key={time} value={time}>
-                          {time}
-                        </option>
-                      ))}
+                      {timeSlots.map((time) => {
+                        const isUnavailable = unavailableSlots.includes(time);
+                        return (
+                          <option 
+                            key={time} 
+                            value={time}
+                            disabled={isUnavailable}
+                            className={isUnavailable ? 'text-gray-400' : ''}
+                          >
+                            {isUnavailable ? `${time} (Booked)` : time}
+                          </option>
+                        );
+                      })}
                     </select>
+                    {unavailableSlots.length > 0 && (
+                      <p className="mt-2 text-sm text-gray-500">
+                        Time slots marked as "(Booked)" are unavailable for the selected doctor and date.
+                      </p>
+                    )}
                   </div>
                 </div>
 

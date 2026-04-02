@@ -1,3 +1,33 @@
+-- Create patients table
+CREATE TABLE IF NOT EXISTS patients (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  first_name VARCHAR(255) NOT NULL,
+  last_name VARCHAR(255) NOT NULL,
+  email VARCHAR(255) NOT NULL,
+  phone VARCHAR(50) NOT NULL,
+  date_of_birth DATE NOT NULL,
+  gender VARCHAR(20),
+  blood_type VARCHAR(10),
+  height VARCHAR(50),
+  weight VARCHAR(50),
+  address TEXT,
+  city VARCHAR(100),
+  state VARCHAR(100),
+  zip_code VARCHAR(20),
+  country VARCHAR(100),
+  allergies TEXT,
+  medications TEXT,
+  medical_history TEXT,
+  emergency_contact_name VARCHAR(255),
+  emergency_contact_phone VARCHAR(50),
+  emergency_contact_relation VARCHAR(50),
+  insurance VARCHAR(255),
+  insurance_number VARCHAR(100),
+  notes TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 -- Create doctors table
 CREATE TABLE IF NOT EXISTS doctors (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -43,8 +73,19 @@ CREATE INDEX IF NOT EXISTS idx_doctors_specialization ON doctors(specialization)
 CREATE INDEX IF NOT EXISTS idx_doctors_available ON doctors(available);
 
 -- Enable Row Level Security (RLS)
+ALTER TABLE patients ENABLE ROW LEVEL SECURITY;
 ALTER TABLE doctors ENABLE ROW LEVEL SECURITY;
 ALTER TABLE appointments ENABLE ROW LEVEL SECURITY;
+
+-- Create policies for patients table
+CREATE POLICY "Anyone can view patients" ON patients
+  FOR SELECT USING (true);
+
+CREATE POLICY "Anyone can insert patients" ON patients
+  FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "Anyone can update patients" ON patients
+  FOR UPDATE USING (true);
 
 -- Create policies for doctors table
 CREATE POLICY "Anyone can view doctors" ON doctors
@@ -68,6 +109,9 @@ CREATE POLICY "Users can update their own appointments" ON appointments
 
 -- For development purposes, you might want to allow all operations
 -- Remove these policies in production
+CREATE POLICY "Allow all operations on patients for development" ON patients
+  FOR ALL USING (true);
+
 CREATE POLICY "Allow all operations for development" ON appointments
   FOR ALL USING (true);
 

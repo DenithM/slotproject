@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { supabase } from '../../client/superbase';
 
 interface Vital { 
   label: string;
@@ -30,19 +31,129 @@ interface Appointment {
 
 interface DashboardProps {
   onNavigateToAppointment?: () => void;
+  onNavigateToDoctorList?: () => void;
+  onNavigateToViewDetails?: (appointment: Appointment) => void;
+  onNavigateToPatientInfo?: (patientId?: string) => void;
+  refreshTrigger?: number;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment }) => {
+const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment, onNavigateToDoctorList, onNavigateToViewDetails, onNavigateToPatientInfo, refreshTrigger }) => {
   const [vitals, setVitals] = useState<Vital[]>([]);
   const [reports, setReports] = useState<Report[]>([]);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [patientData, setPatientData] = useState<any>(null);
 
   useEffect(() => {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    if (refreshTrigger) {
+      fetchData();
+    }
+  }, [refreshTrigger]);
+
+  // Fetch patient data to check if profile is complete
+  useEffect(() => {
+    fetchPatientData();
+  }, []);
+
+  const fetchPatientData = async () => {
+    try {
+      // Get current user from auth (you may need to implement auth context)
+      // For now, we'll use the same email as in the patient form
+      const userEmail = 'denithrokith@gmail.com'; // This should come from auth context
+      
+      const { data, error } = await supabase
+        .from('patients')
+        .select('*')
+        .eq('email', userEmail)
+        .single();
+
+      if (error) {
+        console.error('Error fetching patient data:', error);
+        setPatientData(null);
+      } else if (data && data.first_name) {
+        setPatientData(data);
+      } else {
+        setPatientData(null);
+      }
+    } catch (err) {
+      console.error('Error fetching patient data:', err);
+      setPatientData(null);
+    }
+  };
+
   const fetchData = async () => {
-    // Mock data for demonstration
+    // Fetch appointments from database
+    const fetchAppointments = async () => {
+      try {
+        // Get current user's appointments
+        const userEmail = 'denithrokith@gmail.com'; // This should come from auth context
+        
+        const { data: patientData, error: patientError } = await supabase
+          .from('patients')
+          .select('id')
+          .eq('email', userEmail)
+          .single();
+        
+        if (patientError || !patientData) {
+          console.error('Error finding patient:', patientError);
+          setAppointments([]);
+          return;
+        }
+
+        const { data, error } = await supabase
+          .from('appointments')
+          .select(`
+            *,
+            doctors:doctor_id (
+              name,
+              specialization,
+              avatar
+            )
+          `)
+          .eq('patient_id', patientData.id)
+          .order('date', { ascending: true });
+
+        if (error) {
+          console.error('Error fetching appointments:', error);
+          setAppointments([]);
+        } else {
+          // Transform the data to match the Appointment interface
+          const transformedAppointments = (data || []).map((apt: any): Appointment => ({
+            id: apt.id,
+            doctorName: apt.doctors?.name || 'Unknown Doctor',
+            specialization: apt.doctors?.specialization || 'General',
+            date: new Date(apt.date).toLocaleDateString('en-US', { 
+              month: '2-digit', 
+              day: '2-digit', 
+              year: 'numeric' 
+            }),
+            time: apt.time,
+            status: apt.status === 'scheduled' ? 'Upcoming' : 
+                    apt.status === 'completed' ? 'Completed' : 'Active',
+            avatar: apt.doctors?.avatar || '👨‍⚕️',
+            location: apt.type === 'online' ? 'Online' : 'Hospital'
+          }));
+          
+          setAppointments(transformedAppointments);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        setAppointments([]);
+      }
+    };
+
+    // Fetch patient data
+    fetchPatientData();
+
+    // Fetch appointments
+    fetchAppointments();
+
+    // Fetch vitals and reports
+    // For now, we'll use mock data
     setVitals([
       { label: 'Body Temperature', value: '36.2', unit: '°C', icon: '🌡️', trend: 'stable', color: 'blue' },
       { label: 'Pulse', value: '85', unit: 'bpm', icon: '❤️', trend: 'up', color: 'red' },
@@ -56,49 +167,6 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment }) => {
       { id: '3', name: 'Full Body X-Ray', date: '02/11/2023', type: 'Imaging', status: 'attention' },
       { id: '4', name: 'Hepatitis Panel', date: '02/11/2023', type: 'Blood Test', status: 'normal' },
       { id: '5', name: 'Calcium', date: '02/11/2023', type: 'Blood Test', status: 'critical' },
-    ]);
-
-    setAppointments([
-      {
-        id: '1',
-        doctorName: 'James Carter',
-        specialization: 'Cardiologist',
-        date: '2/11/23',
-        time: '10:00 AM',
-        status: 'Active',
-        avatar: '👨‍⚕️',
-        location: 'Room 204'
-      },
-      {
-        id: '2',
-        doctorName: 'Kelli Jener',
-        specialization: 'Neurologist',
-        date: '2/11/23',
-        time: '2:00 PM',
-        status: 'Upcoming',
-        avatar: '👩‍⚕️',
-        location: 'Room 105'
-      },
-      {
-        id: '3',
-        doctorName: 'Mike Wise',
-        specialization: 'Therapist',
-        date: '2/11/23',
-        time: '3:00 PM',
-        status: 'Completed',
-        avatar: '👨‍⚕️',
-        location: 'Online'
-      },
-      {
-        id: '4',
-        doctorName: 'Saim Perterson',
-        specialization: 'Dentist',
-        date: '2/11/23',
-        time: '4:00 PM',
-        status: 'Completed',
-        avatar: '👩‍⚕️',
-        location: 'Room 301'
-      }
     ]);
   };
 
@@ -139,6 +207,14 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment }) => {
     }
   };
 
+  const upcomingAppointments = appointments.filter(appointment => {
+    const appointmentDate = new Date(appointment.date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Set to start of day for accurate comparison
+    appointmentDate.setHours(0, 0, 0, 0);
+    return appointmentDate >= today;
+  });
+
   const getTrendIcon = (trend?: string) => {
     switch(trend) {
       case 'up': return '📈';
@@ -146,6 +222,39 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment }) => {
       case 'stable': return '➡️';
       default: return '';
     }
+  };
+
+  const getAppointmentForDate = (date: Date): Appointment | null => {
+    const dateString = date.toLocaleDateString('en-US', { 
+      month: '2-digit', 
+      day: '2-digit', 
+      year: 'numeric' 
+    });
+    return appointments.find(apt => apt.date === dateString) || null;
+  };
+
+  const getBookedDates = (): number[] => {
+    return appointments.map(apt => {
+      const date = new Date(apt.date);
+      return date.getDate();
+    });
+  };
+
+  const getDaysInMonth = (date: Date): number => {
+    return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+  };
+
+  const getFirstDayOfMonth = (date: Date): number => {
+    return new Date(date.getFullYear(), date.getMonth(), 1).getDay();
+  };
+
+  const handleDateClick = (day: number) => {
+    const newDate = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), day);
+    setSelectedDate(newDate);
+  };
+
+  const formatMonthYear = (date: Date): string => {
+    return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
   };
 
   return (
@@ -174,11 +283,11 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment }) => {
             </svg>
             <span className="font-medium">Appointments</span>
           </a>
-          <a href="#" className="flex items-center px-6 py-3 text-gray-700 hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 transition-all duration-200 group">
+          <a href="#" onClick={(e) => { e.preventDefault(); onNavigateToDoctorList?.(); }} className="flex items-center px-6 py-3 text-gray-700 hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 transition-all duration-200 group">
             <svg className="w-5 h-5 mr-3 text-gray-500 group-hover:text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
-            <span className="font-medium">Calendar</span>
+            <span className="font-medium">Doctors List</span>
           </a>
           <a href="#" className="flex items-center px-6 py-3 text-gray-700 hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 transition-all duration-200 group">
             <svg className="w-5 h-5 mr-3 text-gray-500 group-hover:text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -194,7 +303,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment }) => {
           </a>
           <a href="#" className="flex items-center px-6 py-3 text-gray-700 hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 transition-all duration-200 group">
             <svg className="w-5 h-5 mr-3 text-gray-500 group-hover:text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543.94 3.31-.826 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
             <span className="font-medium">Settings</span>
@@ -207,15 +316,15 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment }) => {
           </a>
         </nav>
 
-        <div className="absolute bottom-0 w-64 p-6 bg-gradient-to-r from-blue-500 to-blue-600">
+        {/* <div className="absolute bottom-0 w-64 p-6 bg-gradient-to-r from-blue-500 to-blue-600">
           <a href="#" className="flex items-center text-white hover:bg-white hover:bg-opacity-10 rounded-xl p-3 transition-all duration-200">
             <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.742 0 4.955 1.835 4.955 4.955 0 2.742-1.835 4.955-2 3.772 2 1.165-.549 2-2.03 2-3.772zM12 15.75A3.75 3.75 0 018.25 12 3.75 3.75 0 013.75 3.75z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8.25v4.5m0-4.5h.008v4.5h-.008z" />
             </svg>
             <span className="font-medium">Help Center</span>
           </a>
-        </div>
+        </div> */}
       </div>
 
       {/* Main Content */}
@@ -314,7 +423,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment }) => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-100">
-                  {appointments.map((appointment) => (
+                  {upcomingAppointments.map((appointment) => (
                     <tr key={appointment.id} className="hover:bg-gradient-to-r hover:from-blue-50 hover:to-transparent transition-all duration-200">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
@@ -367,11 +476,26 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment }) => {
             </div>
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-lg">
-                UI
+                {patientData ? 
+                  `${patientData.first_name?.[0]?.toUpperCase() || 'U'}${patientData.last_name?.[0]?.toUpperCase() || 'I'}` : 
+                  'UI'
+                }
               </div>
-              <div>
-                <p className="text-sm font-semibold text-gray-900">Denith</p>
-                <p className="text-xs text-gray-500">Patient</p>
+              <div className="cursor-pointer" onClick={() => {
+                if (onNavigateToPatientInfo) {
+                  onNavigateToPatientInfo(patientData?.id);
+                }
+              }}>
+                <p className="text-sm font-semibold text-gray-900">
+                  {patientData ? `${patientData.first_name} ${patientData.last_name}` : 'Denith'}
+                </p>
+                <p className="text-xs text-gray-500">
+                  {patientData ? (
+                    <span className="text-blue-600 hover:text-blue-700 underline">Edit Profile</span>
+                  ) : (
+                    <span className="text-blue-600 hover:text-blue-700 underline">Fill the details</span>
+                  )}
+                </p>
               </div>
             </div>
           </div>
@@ -416,21 +540,37 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment }) => {
             </div>
             <div className="p-4">
               <div className="text-center mb-4">
-                <h4 className="text-lg font-bold text-gray-800">December 2023</h4>
+                <h4 className="text-lg font-bold text-gray-800">{formatMonthYear(selectedDate)}</h4>
               </div>
               <div className="grid grid-cols-7 gap-1 text-center text-xs">
                 {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, index) => (
                   <div key={index} className="font-semibold text-gray-500 py-2">{day}</div>
                 ))}
-                {Array.from({ length: 31 }, (_, i) => i + 1).map((date) => (
-                  <div key={date} className={`py-2 rounded-lg cursor-pointer transition-all duration-200 ${
-                    date === 20 ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold shadow-lg' : 
-                    [15, 22, 28].includes(date) ? 'bg-blue-100 text-blue-600 font-semibold hover:bg-blue-200' :
-                    'text-gray-700 hover:bg-gray-100'
-                  }`}>
-                    {date}
-                  </div>
+                {Array.from({ length: getFirstDayOfMonth(selectedDate) }, (_, i) => (
+                  <div key={`empty-${i}`} className="py-2"></div>
                 ))}
+                {Array.from({ length: getDaysInMonth(selectedDate) }, (_, i) => i + 1).map((date) => {
+                  const isBooked = getBookedDates().includes(date);
+                  const isSelected = date === selectedDate.getDate();
+                  const isToday = date === new Date().getDate() && 
+                                  selectedDate.getMonth() === new Date().getMonth() && 
+                                  selectedDate.getFullYear() === new Date().getFullYear();
+                  
+                  return (
+                    <div 
+                      key={date} 
+                      onClick={() => handleDateClick(date)}
+                      className={`py-2 rounded-lg cursor-pointer transition-all duration-200 ${
+                        isSelected ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold shadow-lg' : 
+                        isBooked ? 'bg-blue-100 text-blue-600 font-semibold hover:bg-blue-200' :
+                        isToday ? 'bg-gray-100 text-gray-900 font-semibold' :
+                        'text-gray-700 hover:bg-gray-100'
+                      }`}
+                    >
+                      {date}
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -444,26 +584,56 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment }) => {
                   📅
                 </div>
                 <div>
-                  <p className="font-bold text-lg">Wed 20</p>
-                  <p className="text-sm opacity-90">December 2023</p>
+                  <p className="font-bold text-lg">
+                    {selectedDate.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric' })}
+                  </p>
+                  <p className="text-sm opacity-90">
+                    {selectedDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                  </p>
                 </div>
               </div>
               <div className="border-t border-white border-opacity-30 pt-4">
-                <p className="font-bold mb-2 text-lg">Dr. Lionel</p>
-                <div className="space-y-1">
-                  <p className="text-sm opacity-90 flex items-center">
-                    <span className="mr-2">🏥</span> Cardiologist
-                  </p>
-                  <p className="text-sm opacity-90 flex items-center">
-                    <span className="mr-2">🕐</span> 03:30 pm
-                  </p>
-                  <p className="text-sm opacity-90 flex items-center">
-                    <span className="mr-2">📍</span> Room 204
-                  </p>
-                </div>
+                {(() => {
+                  const appointment = getAppointmentForDate(selectedDate);
+                  if (appointment) {
+                    return (
+                      <>
+                        <p className="font-bold mb-2 text-lg">{appointment.doctorName}</p>
+                        <div className="space-y-1">
+                          <p className="text-sm opacity-90 flex items-center">
+                            <span className="mr-2">🏥</span> {appointment.specialization}
+                          </p>
+                          <p className="text-sm opacity-90 flex items-center">
+                            <span className="mr-2">🕐</span> {appointment.time}
+                          </p>
+                          <p className="text-sm opacity-90 flex items-center">
+                            <span className="mr-2">📍</span> {appointment.location}
+                          </p>
+                        </div>
+                      </>
+                    );
+                  } else {
+                    return (
+                      <div className="text-center py-4">
+                        <p className="text-sm opacity-90 mb-2">No appointments scheduled</p>
+                        <p className="text-xs opacity-75">Click "Book Appointment" to schedule</p>
+                      </div>
+                    );
+                  }
+                })()}
               </div>
-              <button className="w-full mt-4 bg-white bg-opacity-20 hover:bg-opacity-30 backdrop-blur-sm rounded-lg py-2 text-sm font-medium transition-all duration-200">
-                View Details →
+              <button 
+                onClick={() => {
+                  const appointment = getAppointmentForDate(selectedDate);
+                  if (appointment && onNavigateToViewDetails) {
+                    onNavigateToViewDetails(appointment);
+                  } else if (onNavigateToAppointment) {
+                    onNavigateToAppointment();
+                  }
+                }}
+                className="w-full mt-4 bg-white  text-black bg-opacity-20 hover:bg-opacity-30 backdrop-blur-sm rounded-lg py-2 text-sm font-medium transition-all duration-200"
+              >
+                {getAppointmentForDate(selectedDate) ? 'View Details →' : 'Book Appointment →'}
               </button>
             </div>
           </div>

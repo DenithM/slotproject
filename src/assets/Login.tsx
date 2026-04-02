@@ -276,7 +276,7 @@ Find out how Travel is Better as a Member."
 
           </p>
 
-          <p className="text-lg italic mb-4">Denith</p>
+          <p className="text-lg italic mb-4"></p>
 
           <p className="text-sm">Investor</p>
 
