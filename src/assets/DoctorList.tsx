@@ -23,9 +23,10 @@ interface Doctor {
 interface DoctorListProps {
   onNavigateToOverview?: () => void;
   onNavigateToAppointment?: () => void;
+  onNavigateToReport?: () => void;
 }
 
-const DoctorList: React.FC<DoctorListProps> = ({ onNavigateToOverview, onNavigateToAppointment }) => {
+const DoctorList: React.FC<DoctorListProps> = ({ onNavigateToOverview, onNavigateToAppointment, onNavigateToReport }) => {
   const [selectedDoctor, setSelectedDoctor] = useState<number | null>(null);
   const [activeMenuItem, setActiveMenuItem] = useState<string>('doctors');
 
@@ -51,7 +52,7 @@ const DoctorList: React.FC<DoctorListProps> = ({ onNavigateToOverview, onNavigat
         console.log('Navigate to messages');
         break;
       case 'reports':
-        console.log('Navigate to reports');
+        onNavigateToReport?.();
         break;
       case 'settings':
         console.log('Navigate to settings');

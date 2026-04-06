@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { supabase } from '../../client/superbase';
+import Sidebar from './Sidebar';
 
 interface Vital { 
   label: string;
@@ -34,15 +35,17 @@ interface DashboardProps {
   onNavigateToDoctorList?: () => void;
   onNavigateToViewDetails?: (appointment: Appointment) => void;
   onNavigateToPatientInfo?: (patientId?: string) => void;
+  onNavigateToReport?: () => void;
   refreshTrigger?: number;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment, onNavigateToDoctorList, onNavigateToViewDetails, onNavigateToPatientInfo, refreshTrigger }) => {
+const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment, onNavigateToDoctorList, onNavigateToViewDetails, onNavigateToPatientInfo, onNavigateToReport, refreshTrigger }) => {
   const [vitals, setVitals] = useState<Vital[]>([]);
   const [reports, setReports] = useState<Report[]>([]);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [patientData, setPatientData] = useState<any>(null);
+  const [activeMenuItem, setActiveMenuItem] = useState<string>('overview');
 
   useEffect(() => {
     fetchData();
@@ -257,84 +260,50 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment, onNaviga
     return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
   };
 
-  return (
-    <div className="min-h-screen flex bg-gradient-to-br from-slate-50 to-blue-50 w-full">
-      {/* Left Sidebar */}
-      <div className="w-64 bg-white shadow-xl border-r border-gray-100">
-        <div className="p-6 border-b border-gray-100">
-          <div className="flex items-center space-x-3">
-            <div className="w-25 h-10 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-lg shadow-lg">
-              Healthcare
-            </div>
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent"></h1>
-          </div>
-        </div>
-        
-        <nav className="mt-6">
-          <a href="#" className="flex items-center px-6 py-3 text-white bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 transition-all duration-200 shadow-lg">
-            <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-            </svg>
-            <span className="font-medium">Overview</span>
-          </a>
-          <a href="#" onClick={(e) => { e.preventDefault(); onNavigateToAppointment?.(); }} className="flex items-center px-6 py-3 text-gray-700 hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 transition-all duration-200 group">
-            <svg className="w-5 h-5 mr-3 text-gray-500 group-hover:text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-            <span className="font-medium">Appointments</span>
-          </a>
-          <a href="#" onClick={(e) => { e.preventDefault(); onNavigateToDoctorList?.(); }} className="flex items-center px-6 py-3 text-gray-700 hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 transition-all duration-200 group">
-            <svg className="w-5 h-5 mr-3 text-gray-500 group-hover:text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-            <span className="font-medium">Doctors List</span>
-          </a>
-          <a href="#" className="flex items-center px-6 py-3 text-gray-700 hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 transition-all duration-200 group">
-            <svg className="w-5 h-5 mr-3 text-gray-500 group-hover:text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-            </svg>
-            <span className="font-medium">Message</span>
-          </a>
-          <a href="#" className="flex items-center px-6 py-3 text-gray-700 hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 transition-all duration-200 group">
-            <svg className="w-5 h-5 mr-3 text-gray-500 group-hover:text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v1a1 1 0 001 1h4a1 1 0 001-1v-1m3-4V8a2 2 0 00-2-2H8a2 2 0 00-2 2v5m3 0h6a2 2 0 002 2v-2m-6 0h6" />
-            </svg>
-            <span className="font-medium">Reports</span>
-          </a>
-          <a href="#" className="flex items-center px-6 py-3 text-gray-700 hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 transition-all duration-200 group">
-            <svg className="w-5 h-5 mr-3 text-gray-500 group-hover:text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543.94 3.31-.826 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-            <span className="font-medium">Settings</span>
-          </a>
-          <a href="#" className="flex items-center px-6 py-3 text-gray-700 hover:bg-gradient-to-r hover:from-red-50 hover:to-red-100 transition-all duration-200 group">
-            <svg className="w-5 h-5 mr-3 text-gray-500 group-hover:text-red-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-            </svg>
-            <span className="font-medium">Log out</span>
-          </a>
-        </nav>
+  const handleSidebarClick = (item: string) => {
+    setActiveMenuItem(item);
+    
+    // Handle navigation logic
+    switch (item) {
+      case 'overview':
+        // Already on dashboard
+        break;
+      case 'appointments':
+        onNavigateToAppointment?.();
+        break;
+      case 'doctors':
+        onNavigateToDoctorList?.();
+        break;
+      case 'message':
+        console.log('Navigate to messages');
+        break;
+      case 'reports':
+        onNavigateToReport?.();
+        break;
+      case 'settings':
+        console.log('Navigate to settings');
+        break;
+      case 'logout':
+        console.log('Handle logout');
+        break;
+      default:
+        console.log(`Navigating to: ${item}`);
+    }
+  };
 
-        {/* <div className="absolute bottom-0 w-64 p-6 bg-gradient-to-r from-blue-500 to-blue-600">
-          <a href="#" className="flex items-center text-white hover:bg-white hover:bg-opacity-10 rounded-xl p-3 transition-all duration-200">
-            <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8.25v4.5m0-4.5h.008v4.5h-.008z" />
-            </svg>
-            <span className="font-medium">Help Center</span>
-          </a>
-        </div> */}
-      </div>
+  return (
+    <div className="flex min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 w-full">
+      <Sidebar activeItem={activeMenuItem} onItemClick={handleSidebarClick} />
 
       {/* Main Content */}
-      <div className="flex-1 flex">
+      <div className="flex-1 ml-64 flex">
         <div className="flex-1 p-8">
           {/* Greeting */}
           <div className="mb-6">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-2xl font-light text-gray-800 mb-1">Good Morning, Denith! 👋</h2>
+                <h2 className="text-2xl font-light text-gray-800 mb-1">Good Morning {patientData ? 
+                  `${patientData.first_name}` : 'User'}</h2>
                 <p className="text-gray-600">Here's your health overview for today</p>
               </div>
               <div className="text-right">
@@ -345,7 +314,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment, onNaviga
           </div>
 
           {/* Banner */}
-          <div className="bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 rounded-2xl p-8 mb-8 text-white relative overflow-hidden shadow-2xl">
+          <div className="bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 rounded-2xl p-8 mb-8 text-white relative overflow-hidden shadow-2xl ">
             <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full -mr-32 -mt-32"></div>
             <div className="absolute bottom-0 left-0 w-48 h-48 bg-white opacity-5 rounded-full -ml-24 -mb-24"></div>
             <div className="relative z-10">
@@ -487,7 +456,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment, onNaviga
                 }
               }}>
                 <p className="text-sm font-semibold text-gray-900">
-                  {patientData ? `${patientData.first_name} ${patientData.last_name}` : 'Denith'}
+                  {patientData ? `${patientData.first_name} ${patientData.last_name}` : 'User'}
                 </p>
                 <p className="text-xs text-gray-500">
                   {patientData ? (

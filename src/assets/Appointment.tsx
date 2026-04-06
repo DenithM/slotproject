@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../client/superbase';
+import Sidebar from './Sidebar';
 
 interface Doctor {
   id: string;
@@ -17,7 +18,12 @@ interface AppointmentFormData {
   type: 'in-person' | 'online';
 }
 
-const Appointment: React.FC<{ onBack: () => void }> = ({ onBack }) => {
+const Appointment: React.FC<{ 
+  onBack: () => void;
+  onNavigateToReport?: () => void;
+  onNavigateToDoctorList?: () => void;
+  onNavigateToViewDetails?: (appointment: any) => void;
+}> = ({ onBack, onNavigateToReport, onNavigateToDoctorList, onNavigateToViewDetails }) => {
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -31,6 +37,7 @@ const Appointment: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   });
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [activeMenuItem, setActiveMenuItem] = useState<string>('appointments');
 
   useEffect(() => {
     fetchDoctors();
@@ -178,6 +185,42 @@ const Appointment: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       } else {
         setSuccessMessage('Appointment booked successfully!');
         
+        // Get the newly created appointment data for navigation
+        const { data: newAppointment, error: fetchError } = await supabase
+          .from('appointments')
+          .select(`
+            *,
+            doctors:doctor_id (
+              name,
+              specialization,
+              avatar
+            )
+          `)
+          .eq('patient_id', patientData.id)
+          .eq('doctor_id', formData.doctorId)
+          .eq('date', formData.date)
+          .eq('time', formData.time)
+          .single();
+
+        if (!fetchError && newAppointment && onNavigateToViewDetails) {
+          const appointmentDetails = {
+            id: newAppointment.id,
+            doctorName: newAppointment.doctors?.name || 'Unknown Doctor',
+            specialization: newAppointment.doctors?.specialization || 'General',
+            date: new Date(newAppointment.date).toLocaleDateString('en-US', { 
+              month: '2-digit', 
+              day: '2-digit', 
+              year: 'numeric' 
+            }),
+            time: newAppointment.time,
+            status: 'Upcoming' as const,
+            avatar: newAppointment.doctors?.avatar || '👨‍⚕️',
+            location: newAppointment.type === 'online' ? 'Online' : 'Hospital'
+          };
+          
+          onNavigateToViewDetails(appointmentDetails);
+        }
+        
         setFormData({
           doctorId: '',
           date: '',
@@ -200,40 +243,40 @@ const Appointment: React.FC<{ onBack: () => void }> = ({ onBack }) => {
     '03:00 PM', '03:30 PM', '04:00 PM', '04:30 PM'
   ];
 
+  const handleSidebarClick = (item: string) => {
+    setActiveMenuItem(item);
+    
+    // Handle navigation logic
+    switch (item) {
+      case 'overview':
+        onBack();
+        break;
+      case 'appointments':
+        // Already on appointments
+        break;
+      case 'doctors':
+        onNavigateToDoctorList?.();
+        break;
+      case 'message':
+        console.log('Navigate to messages');
+        break;
+      case 'reports':
+        onNavigateToReport?.();
+        break;
+      case 'logout':
+        console.log('Handle logout');
+        break;
+      default:
+        console.log(`Navigating to: ${item}`);
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-      <div className="flex">
-      
-        <div className="w-64 bg-white shadow-xl border-r border-gray-100">
-          <div className="p-6 border-b border-gray-100">
-            <div className="flex items-center space-x-3">
-              <div className="w-25 h-10 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-lg shadow-lg">
-                Healthcare
-              </div>
-            </div>
-          </div>
-          
-          <nav className="mt-6">
-            <button 
-              onClick={onBack}
-              className="w-full flex items-center px-6 py-3 text-gray-700 hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 transition-all duration-200 group"
-            >
-              <svg className="w-5 h-5 mr-3 text-gray-500 group-hover:text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-              </svg>
-              <span className="font-medium">Back to Dashboard</span>
-            </button>
-            <div className="flex items-center px-6 py-3 text-white bg-gradient-to-r from-blue-500 to-blue-600">
-              <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
-              <span className="font-medium">Book Appointment</span>
-            </div>
-          </nav>
-        </div>
+    <div className="flex min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+      <Sidebar activeItem={activeMenuItem} onItemClick={handleSidebarClick} />
 
        
-        <div className="flex-1 p-8">
+        <div className="flex-1 ml-64 p-8">
           <div className="max-w-4xl mx-auto">
             {/* Header */}
             <div className="mb-8">
@@ -399,7 +442,6 @@ const Appointment: React.FC<{ onBack: () => void }> = ({ onBack }) => {
             </div>
           </div>
         </div>
-      </div>
     </div>
   );
 };

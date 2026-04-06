@@ -7,9 +7,10 @@ import Appointment from "./assets/Appointment";
 import DoctorList from "./assets/DoctorList";
 import ViewDetails from "./assets/Viewdetails";
 import Patientinfo from "./assets/Patientinfo";
+import Report from "./assets/Report";
 
 function App() {
-  const [currentView, setCurrentView] = useState<'login' | 'register' | 'dashboard' | 'appointment' | 'doctorlist' | 'viewdetails' | 'patientinfo'>('login');
+  const [currentView, setCurrentView] = useState<'login' | 'register' | 'dashboard' | 'appointment' | 'doctorlist' | 'viewdetails' | 'patientinfo' | 'report'>('login');
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [selectedAppointment, setSelectedAppointment] = useState<any>(null);
   const [currentPatientId, setCurrentPatientId] = useState<string | null>(null);
@@ -17,6 +18,10 @@ function App() {
   const handleNavigateToPatientInfo = (patientId?: string) => {
     setCurrentPatientId(patientId || null);
     setCurrentView('patientinfo');
+  };
+
+  const handleNavigateToReport = () => {
+    setCurrentView('report');
   };
 
   const handleBackToDashboard = () => {
@@ -47,15 +52,27 @@ function App() {
       ) : currentView === 'register' ? (
         <Register onSwitchToLogin={() => setCurrentView('login')} />
       ) : currentView === 'appointment' ? (
-        <Appointment onBack={handleBackToDashboard} />
+        <Appointment 
+          onBack={handleBackToDashboard} 
+          onNavigateToReport={handleNavigateToReport}
+          onNavigateToDoctorList={() => setCurrentView('doctorlist')}
+          onNavigateToViewDetails={handleNavigateToViewDetails}
+        />
       ) : currentView === 'doctorlist' ? (
-        <DoctorList onNavigateToOverview={() => setCurrentView('dashboard')} onNavigateToAppointment={() => setCurrentView('appointment')} />
+        <DoctorList 
+          onNavigateToOverview={() => setCurrentView('dashboard')} 
+          onNavigateToAppointment={() => setCurrentView('appointment')}
+          onNavigateToReport={handleNavigateToReport}
+        />
       ) : currentView === 'viewdetails' ? (
         <ViewDetails 
           appointment={selectedAppointment} 
           onBack={handleBackToDashboard} 
           onReschedule={handleRescheduleAppointment}
           onCancel={handleCancelAppointment}
+          onNavigateToReport={handleNavigateToReport}
+          onNavigateToDoctorList={() => setCurrentView('doctorlist')}
+          onNavigateToAppointment={() => setCurrentView('appointment')}
         />
       ) : currentView === 'patientinfo' ? (
         <Patientinfo 
@@ -66,12 +83,19 @@ function App() {
           }}
           patientId={currentPatientId || undefined}
         />
+      ) : currentView === 'report' ? (
+        <Report 
+          onNavigateToDashboard={handleBackToDashboard}
+          onNavigateToAppointment={() => setCurrentView('appointment')}
+          onNavigateToDoctorList={() => setCurrentView('doctorlist')}
+        />
       ) : (
         <Dashboard 
           onNavigateToAppointment={() => setCurrentView('appointment')} 
           onNavigateToDoctorList={() => setCurrentView('doctorlist')} 
           onNavigateToViewDetails={handleNavigateToViewDetails}
           onNavigateToPatientInfo={handleNavigateToPatientInfo}
+          onNavigateToReport={handleNavigateToReport}
           refreshTrigger={refreshTrigger} 
         />
       )}
