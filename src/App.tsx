@@ -50,16 +50,20 @@ function App() {
       ) : currentView === 'appointment' ? (
         <Appointment onBack={handleBackToDashboard} />
       ) : currentView === 'doctorlist' ? (
-        <DoctorList onNavigateToOverview={() => setCurrentView('dashboard')} onNavigateToAppointment={() => setCurrentView('appointment')} />
+        <DoctorList 
+          onNavigateToOverview={() => setCurrentView('dashboard')} 
+          onNavigateToAppointment={() => setCurrentView('appointment')} 
+          onLogout={() => setCurrentView('login')}
+        />
       ) : currentView === 'viewdetails' ? (
-        <ViewDetails 
-          appointment={selectedAppointment} 
-          onBack={handleBackToDashboard} 
+        <ViewDetails
+          appointment={selectedAppointment}
+          onBack={handleBackToDashboard}
           onReschedule={handleRescheduleAppointment}
           onCancel={handleCancelAppointment}
         />
       ) : currentView === 'patientinfo' ? (
-        <Patientinfo 
+        <Patientinfo
           onBack={handleBackToDashboard}
           onSave={() => {
             setRefreshTrigger(prev => prev + 1);
@@ -70,13 +74,14 @@ function App() {
       ) : currentView === 'feedback' ? (
         <Feedback onBackToDashboard={handleBackToDashboard} />
       ) : (
-        <Dashboard 
-          onNavigateToAppointment={() => setCurrentView('appointment')} 
-          onNavigateToDoctorList={() => setCurrentView('doctorlist')} 
+        <Dashboard
+          onNavigateToAppointment={() => setCurrentView('appointment')}
+          onNavigateToDoctorList={() => setCurrentView('doctorlist')}
           onNavigateToViewDetails={handleNavigateToViewDetails}
           onNavigateToPatientInfo={handleNavigateToPatientInfo}
           onNavigateToFeedback={() => setCurrentView('feedback')}
-          refreshTrigger={refreshTrigger} 
+          onLogout={() => setCurrentView('login')}
+          refreshTrigger={refreshTrigger}
         />
       )}
     </div>

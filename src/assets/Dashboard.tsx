@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { supabase } from '../../client/superbase';
 
-interface Vital { 
+interface Vital {
   label: string;
   value: string;
   unit: string;
@@ -35,10 +35,11 @@ interface DashboardProps {
   onNavigateToViewDetails?: (appointment: Appointment) => void;
   onNavigateToPatientInfo?: (patientId?: string) => void;
   onNavigateToFeedback?: () => void;
+  onLogout?: () => void;
   refreshTrigger?: number;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment, onNavigateToDoctorList, onNavigateToViewDetails, onNavigateToPatientInfo, onNavigateToFeedback, refreshTrigger }) => {
+const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment, onNavigateToDoctorList, onNavigateToViewDetails, onNavigateToPatientInfo, onNavigateToFeedback, onLogout, refreshTrigger }) => {
   const [vitals, setVitals] = useState<Vital[]>([]);
   const [reports, setReports] = useState<Report[]>([]);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
@@ -65,7 +66,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment, onNaviga
       // Get current user from auth (you may need to implement auth context)
       // For now, we'll use the same email as in the patient form
       const userEmail = 'denithrokith@gmail.com'; // This should come from auth context
-      
+
       const { data, error } = await supabase
         .from('patients')
         .select('*')
@@ -92,13 +93,13 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment, onNaviga
       try {
         // Get current user's appointments
         const userEmail = 'denithrokith@gmail.com'; // This should come from auth context
-        
+
         const { data: patientData, error: patientError } = await supabase
           .from('patients')
           .select('id')
           .eq('email', userEmail)
           .single();
-        
+
         if (patientError || !patientData) {
           console.error('Error finding patient:', patientError);
           setAppointments([]);
@@ -127,18 +128,18 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment, onNaviga
             id: apt.id,
             doctorName: apt.doctors?.name || 'Unknown Doctor',
             specialization: apt.doctors?.specialization || 'General',
-            date: new Date(apt.date).toLocaleDateString('en-US', { 
-              month: '2-digit', 
-              day: '2-digit', 
-              year: 'numeric' 
+            date: new Date(apt.date).toLocaleDateString('en-US', {
+              month: '2-digit',
+              day: '2-digit',
+              year: 'numeric'
             }),
             time: apt.time,
-            status: apt.status === 'scheduled' ? 'Upcoming' : 
-                    apt.status === 'completed' ? 'Completed' : 'Active',
+            status: apt.status === 'scheduled' ? 'Upcoming' :
+              apt.status === 'completed' ? 'Completed' : 'Active',
             avatar: apt.doctors?.avatar || '👨‍⚕️',
             location: apt.type === 'online' ? 'Online' : 'Hospital'
           }));
-          
+
           setAppointments(transformedAppointments);
         }
       } catch (error) {
@@ -172,7 +173,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment, onNaviga
   };
 
   const getStatusColor = (status: string) => {
-    switch(status) {
+    switch (status) {
       case 'Active': return 'bg-emerald-100 text-emerald-800 border-emerald-200';
       case 'Upcoming': return 'bg-blue-100 text-blue-800 border-blue-200';
       case 'Completed': return 'bg-gray-100 text-gray-800 border-gray-200';
@@ -181,7 +182,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment, onNaviga
   };
 
   const getStatusDot = (status: string) => {
-    switch(status) {
+    switch (status) {
       case 'Active': return 'bg-emerald-500';
       case 'Upcoming': return 'bg-blue-500';
       case 'Completed': return 'bg-gray-500';
@@ -190,7 +191,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment, onNaviga
   };
 
   const getReportStatusColor = (status?: string) => {
-    switch(status) {
+    switch (status) {
       case 'normal': return 'bg-green-50 border-green-200 text-green-700';
       case 'attention': return 'bg-yellow-50 border-yellow-200 text-yellow-700';
       case 'critical': return 'bg-red-50 border-red-200 text-red-700';
@@ -199,7 +200,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment, onNaviga
   };
 
   const getVitalColor = (color?: string) => {
-    switch(color) {
+    switch (color) {
       case 'blue': return 'from-blue-400 to-blue-600';
       case 'red': return 'from-red-400 to-red-600';
       case 'purple': return 'from-purple-400 to-purple-600';
@@ -217,7 +218,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment, onNaviga
   });
 
   const getTrendIcon = (trend?: string) => {
-    switch(trend) {
+    switch (trend) {
       case 'up': return '📈';
       case 'down': return '📉';
       case 'stable': return '➡️';
@@ -226,10 +227,10 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment, onNaviga
   };
 
   const getAppointmentForDate = (date: Date): Appointment | null => {
-    const dateString = date.toLocaleDateString('en-US', { 
-      month: '2-digit', 
-      day: '2-digit', 
-      year: 'numeric' 
+    const dateString = date.toLocaleDateString('en-US', {
+      month: '2-digit',
+      day: '2-digit',
+      year: 'numeric'
     });
     return appointments.find(apt => apt.date === dateString) || null;
   };
@@ -270,7 +271,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment, onNaviga
             <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent"></h1>
           </div>
         </div>
-        
+
         <nav className="mt-6">
           <a href="#" className="flex items-center px-6 py-3 text-white bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 transition-all duration-200 shadow-lg">
             <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -315,7 +316,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment, onNaviga
             </svg>
             <span className="font-medium">Feedback</span>
           </a>
-          <a href="#" className="flex items-center px-6 py-3 text-gray-700 hover:bg-gradient-to-r hover:from-red-50 hover:to-red-100 transition-all duration-200 group">
+          <a href="#" onClick={(e) => { e.preventDefault(); onLogout?.(); }} className="flex items-center px-6 py-3 text-gray-700 hover:bg-gradient-to-r hover:from-red-50 hover:to-red-100 transition-all duration-200 group">
             <svg className="w-5 h-5 mr-3 text-gray-500 group-hover:text-red-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
             </svg>
@@ -483,8 +484,8 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment, onNaviga
             </div>
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-lg">
-                {patientData ? 
-                  `${patientData.first_name?.[0]?.toUpperCase() || 'U'}${patientData.last_name?.[0]?.toUpperCase() || 'I'}` : 
+                {patientData ?
+                  `${patientData.first_name?.[0]?.toUpperCase() || 'U'}${patientData.last_name?.[0]?.toUpperCase() || 'I'}` :
                   'UI'
                 }
               </div>
@@ -519,11 +520,10 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment, onNaviga
               {reports.map((report) => (
                 <div key={report.id} className="flex items-center justify-between p-3 hover:bg-gradient-to-r hover:from-gray-50 hover:to-transparent rounded-xl cursor-pointer transition-all duration-200 border border-transparent hover:border-gray-100">
                   <div className="flex items-center space-x-3">
-                    <div className={`w-2 h-2 rounded-full ${
-                      report.status === 'normal' ? 'bg-green-500' : 
-                      report.status === 'attention' ? 'bg-yellow-500' : 
-                      'bg-red-500'
-                    }`}></div>
+                    <div className={`w-2 h-2 rounded-full ${report.status === 'normal' ? 'bg-green-500' :
+                      report.status === 'attention' ? 'bg-yellow-500' :
+                        'bg-red-500'
+                      }`}></div>
                     <div>
                       <span className="text-sm font-medium text-gray-700">{report.name}</span>
                       <div className="text-xs text-gray-500">{report.type}</div>
@@ -559,20 +559,19 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment, onNaviga
                 {Array.from({ length: getDaysInMonth(selectedDate) }, (_, i) => i + 1).map((date) => {
                   const isBooked = getBookedDates().includes(date);
                   const isSelected = date === selectedDate.getDate();
-                  const isToday = date === new Date().getDate() && 
-                                  selectedDate.getMonth() === new Date().getMonth() && 
-                                  selectedDate.getFullYear() === new Date().getFullYear();
-                  
+                  const isToday = date === new Date().getDate() &&
+                    selectedDate.getMonth() === new Date().getMonth() &&
+                    selectedDate.getFullYear() === new Date().getFullYear();
+
                   return (
-                    <div 
-                      key={date} 
+                    <div
+                      key={date}
                       onClick={() => handleDateClick(date)}
-                      className={`py-2 rounded-lg cursor-pointer transition-all duration-200 ${
-                        isSelected ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold shadow-lg' : 
+                      className={`py-2 rounded-lg cursor-pointer transition-all duration-200 ${isSelected ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold shadow-lg' :
                         isBooked ? 'bg-blue-100 text-blue-600 font-semibold hover:bg-blue-200' :
-                        isToday ? 'bg-gray-100 text-gray-900 font-semibold' :
-                        'text-gray-700 hover:bg-gray-100'
-                      }`}
+                          isToday ? 'bg-gray-100 text-gray-900 font-semibold' :
+                            'text-gray-700 hover:bg-gray-100'
+                        }`}
                     >
                       {date}
                     </div>
@@ -629,7 +628,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment, onNaviga
                   }
                 })()}
               </div>
-              <button 
+              <button
                 onClick={() => {
                   const appointment = getAppointmentForDate(selectedDate);
                   if (appointment && onNavigateToViewDetails) {

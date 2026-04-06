@@ -131,7 +131,7 @@ export default function Feedback({ onBackToDashboard }: FeedbackProps) {
                                 {/* Website Rating */}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Rate Website
+                                        Rate our Platform
                                     </label>
                                     <div className="flex space-x-2">
                                         {renderStars(websiteRating, setWebsiteRating)}
