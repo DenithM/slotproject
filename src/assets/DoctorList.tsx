@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import doctorbg from 'D:/slot pro/project/public/doctorbg.jpg';
+const doctorbg = '/doctorbg.jpg';
 import Sidebar from './Sidebar';
 
 interface Doctor {
