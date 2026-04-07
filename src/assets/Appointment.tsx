@@ -25,8 +25,9 @@ const Appointment: React.FC<{
   onNavigateToHistory?: () => void;
   onNavigateToFeedback?: () => void;
   onLogout?: () => void;
+  appointmentToReschedule?: { id: string } | null;
   onNavigateToViewDetails?: (appointment: any) => void;
-}> = ({ onBack, onNavigateToReport, onNavigateToDoctorList, onNavigateToHistory, onNavigateToFeedback, onLogout, onNavigateToViewDetails }) => {
+}> = ({ onBack, onNavigateToReport, onNavigateToDoctorList, onNavigateToHistory, onNavigateToFeedback, onLogout, appointmentToReschedule, onNavigateToViewDetails }) => {
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -41,10 +42,55 @@ const Appointment: React.FC<{
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [activeMenuItem, setActiveMenuItem] = useState<string>('appointments');
+  const [rescheduleLoading, setRescheduleLoading] = useState(false);
+  const isRescheduleMode = Boolean(appointmentToReschedule?.id);
 
   useEffect(() => {
     fetchDoctors();
   }, []);
+
+  useEffect(() => {
+    const loadAppointmentForReschedule = async () => {
+      if (!appointmentToReschedule?.id) {
+        return;
+      }
+
+      try {
+        setRescheduleLoading(true);
+        setErrorMessage('');
+
+        const { data, error } = await supabase
+          .from('appointments')
+          .select('*')
+          .eq('id', appointmentToReschedule.id)
+          .single();
+
+        if (error || !data) {
+          console.error('Error loading appointment for reschedule:', error);
+          setErrorMessage('Failed to load appointment details for rescheduling.');
+          return;
+        }
+
+        const nextFormData: AppointmentFormData = {
+          doctorId: data.doctor_id || '',
+          date: data.date || '',
+          time: data.time || '',
+          reason: data.reason || '',
+          type: data.type === 'online' ? 'online' : 'in-person',
+        };
+
+        setFormData(nextFormData);
+        getUnavailableSlots(nextFormData.doctorId, nextFormData.date, appointmentToReschedule.id);
+      } catch (error) {
+        console.error('Error loading reschedule form:', error);
+        setErrorMessage('An unexpected error occurred while loading the appointment.');
+      } finally {
+        setRescheduleLoading(false);
+      }
+    };
+
+    loadAppointmentForReschedule();
+  }, [appointmentToReschedule?.id]);
 
   const fetchDoctors = async () => {
     try {
@@ -71,15 +117,26 @@ const Appointment: React.FC<{
     }
   };
 
-  const checkDoctorAvailability = async (doctorId: string, date: string, time: string): Promise<boolean> => {
+  const checkDoctorAvailability = async (
+    doctorId: string,
+    date: string,
+    time: string,
+    excludeAppointmentId?: string
+  ): Promise<boolean> => {
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('appointments')
         .select('*')
         .eq('doctor_id', doctorId)
         .eq('date', date)
         .eq('time', time)
         .eq('status', 'scheduled');
+
+      if (excludeAppointmentId) {
+        query = query.neq('id', excludeAppointmentId);
+      }
+
+      const { data, error } = await query;
 
       if (error) {
         console.error('Error checking availability:', error);
@@ -93,19 +150,25 @@ const Appointment: React.FC<{
     }
   };
 
-  const getUnavailableSlots = async (doctorId: string, date: string) => {
+  const getUnavailableSlots = async (doctorId: string, date: string, excludeAppointmentId?: string) => {
     if (!doctorId || !date) {
       setUnavailableSlots([]);
       return;
     }
 
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('appointments')
         .select('time')
         .eq('doctor_id', doctorId)
         .eq('date', date)
         .eq('status', 'scheduled');
+
+      if (excludeAppointmentId) {
+        query = query.neq('id', excludeAppointmentId);
+      }
+
+      const { data, error } = await query;
 
       if (error) {
         console.error('Error fetching unavailable slots:', error);
@@ -132,7 +195,8 @@ const Appointment: React.FC<{
       const newFormData = { ...formData, [name]: value };
       getUnavailableSlots(
         name === 'doctorId' ? value : newFormData.doctorId,
-        name === 'date' ? value : newFormData.date
+        name === 'date' ? value : newFormData.date,
+        appointmentToReschedule?.id
       );
     }
   };
@@ -145,7 +209,12 @@ const Appointment: React.FC<{
 
     try {
       // Check if doctor is available at the selected date and time
-      const isAvailable = await checkDoctorAvailability(formData.doctorId, formData.date, formData.time);
+      const isAvailable = await checkDoctorAvailability(
+        formData.doctorId,
+        formData.date,
+        formData.time,
+        appointmentToReschedule?.id
+      );
 
       if (!isAvailable) {
         setErrorMessage('This doctor is already booked at the selected time. Please choose a different time slot.');
@@ -167,29 +236,59 @@ const Appointment: React.FC<{
         return;
       }
 
-      const { error } = await supabase
-        .from('appointments')
-        .insert([
-          {
-            patient_id: patientData.id,
+      let saveError = null;
+
+      if (appointmentToReschedule?.id) {
+        const { error } = await supabase
+          .from('appointments')
+          .update({
             doctor_id: formData.doctorId,
             date: formData.date,
             time: formData.time,
             reason: formData.reason,
             type: formData.type,
             status: 'scheduled',
-            created_at: new Date().toISOString()
-          }
-        ]);
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', appointmentToReschedule.id);
 
-      if (error) {
-        console.error('Error creating appointment:', error);
-        setErrorMessage('Failed to book appointment. Please try again.');
+        saveError = error;
       } else {
-        setSuccessMessage('Appointment booked successfully!');
+        const { error } = await supabase
+          .from('appointments')
+          .insert([
+            {
+              patient_id: patientData.id,
+              doctor_id: formData.doctorId,
+              date: formData.date,
+              time: formData.time,
+              reason: formData.reason,
+              type: formData.type,
+              status: 'scheduled',
+              created_at: new Date().toISOString()
+            }
+          ]);
 
-        // Get the newly created appointment data for navigation
-        const { data: newAppointment, error: fetchError } = await supabase
+        saveError = error;
+      }
+
+      if (saveError) {
+        console.error('Error saving appointment:', saveError);
+        setErrorMessage(
+          appointmentToReschedule?.id
+            ? 'Failed to reschedule appointment. Please try again.'
+            : 'Failed to book appointment. Please try again.'
+        );
+      } else {
+        setSuccessMessage(
+          appointmentToReschedule?.id
+            ? 'Appointment rescheduled successfully!'
+            : 'Appointment booked successfully!'
+        );
+
+        const appointmentId = appointmentToReschedule?.id;
+
+        const appointmentQuery = supabase
           .from('appointments')
           .select(`
             *,
@@ -199,11 +298,13 @@ const Appointment: React.FC<{
               avatar
             )
           `)
-          .eq('patient_id', patientData.id)
           .eq('doctor_id', formData.doctorId)
           .eq('date', formData.date)
-          .eq('time', formData.time)
-          .single();
+          .eq('time', formData.time);
+
+        const { data: newAppointment, error: fetchError } = appointmentId
+          ? await appointmentQuery.eq('id', appointmentId).single()
+          : await appointmentQuery.eq('patient_id', patientData.id).single();
 
         if (!fetchError && newAppointment && onNavigateToViewDetails) {
           const appointmentDetails = {
@@ -289,8 +390,14 @@ const Appointment: React.FC<{
         <div className="max-w-4xl mx-auto">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-3xl font-light text-gray-800 mb-2">Book an Appointment</h1>
-            <p className="text-gray-600">Schedule your consultation with our expert doctors</p>
+            <h1 className="text-3xl font-light text-gray-800 mb-2">
+              {isRescheduleMode ? 'Reschedule Appointment' : 'Book an Appointment'}
+            </h1>
+            <p className="text-gray-600">
+              {isRescheduleMode
+                ? 'Choose a new doctor, date, or time for your existing appointment'
+                : 'Schedule your consultation with our expert doctors'}
+            </p>
           </div>
 
           {/* Success/Error Messages */}
@@ -302,6 +409,11 @@ const Appointment: React.FC<{
           {errorMessage && (
             <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
               {errorMessage}
+            </div>
+          )}
+          {rescheduleLoading && (
+            <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg text-blue-700">
+              Loading your current appointment details...
             </div>
           )}
 
@@ -441,10 +553,12 @@ const Appointment: React.FC<{
                 </button>
                 <button
                   type="submit"
-                  disabled={submitting}
+                  disabled={submitting || rescheduleLoading}
                   className="px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {submitting ? 'Booking...' : 'Book Appointment'}
+                  {submitting
+                    ? isRescheduleMode ? 'Rescheduling...' : 'Booking...'
+                    : isRescheduleMode ? 'Save Rescheduled Appointment' : 'Book Appointment'}
                 </button>
               </div>
             </form>
