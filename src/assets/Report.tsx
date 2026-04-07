@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../../client/superbase';
 import Sidebar from './Sidebar';
 
 interface Report {
@@ -18,16 +17,19 @@ interface ReportProps {
   onNavigateToDashboard?: () => void;
   onNavigateToAppointment?: () => void;
   onNavigateToDoctorList?: () => void;
+  onNavigateToHistory?: () => void;
+  onNavigateToFeedback?: () => void;
+  onLogout?: () => void;
 }
 
-const Report: React.FC<ReportProps> = ({ onNavigateToDashboard, onNavigateToAppointment, onNavigateToDoctorList }) => {
+const Report: React.FC<ReportProps> = ({ onNavigateToDashboard, onNavigateToAppointment, onNavigateToDoctorList, onNavigateToHistory, onNavigateToFeedback, onLogout }) => {
   const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterType, setFilterType] = useState('all');
-  const [filterStatus, setFilterStatus] = useState('all');
+  const searchTerm = '';
+  const filterType = 'all';
+  const filterStatus = 'all';
   const [activeMenuItem, setActiveMenuItem] = useState<string>('reports');
 
   useEffect(() => {
@@ -130,15 +132,6 @@ const Report: React.FC<ReportProps> = ({ onNavigateToDashboard, onNavigateToAppo
     }
   };
 
-  const getReportStatusDot = (status?: string) => {
-    switch(status) {
-      case 'normal': return 'bg-green-500';
-      case 'attention': return 'bg-yellow-500';
-      case 'critical': return 'bg-red-500';
-      default: return 'bg-gray-500';
-    }
-  };
-
   const getTypeIcon = (type?: string) => {
     switch(type) {
       case 'Blood Test': return '🩸';
@@ -158,9 +151,6 @@ const Report: React.FC<ReportProps> = ({ onNavigateToDashboard, onNavigateToAppo
     
     return matchesSearch && matchesType && matchesStatus;
   });
-
-  const reportTypes = Array.from(new Set(reports.map(r => r.type).filter(Boolean)));
-
   const handleDownloadAllReports = () => {
     const allReportsContent = `
       <!DOCTYPE html>
@@ -428,6 +418,12 @@ const Report: React.FC<ReportProps> = ({ onNavigateToDashboard, onNavigateToAppo
       case 'doctors':
         onNavigateToDoctorList?.();
         break;
+      case 'history':
+        onNavigateToHistory?.();
+        break;
+      case 'feedback':
+        onNavigateToFeedback?.();
+        break;
       case 'message':
         console.log('Navigate to messages');
         break;
@@ -438,7 +434,7 @@ const Report: React.FC<ReportProps> = ({ onNavigateToDashboard, onNavigateToAppo
         console.log('Navigate to settings');
         break;
       case 'logout':
-        console.log('Handle logout');
+        onLogout?.();
         break;
       default:
         console.log(`Navigating to: ${item}`);

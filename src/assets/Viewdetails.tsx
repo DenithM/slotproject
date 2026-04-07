@@ -63,9 +63,12 @@ interface ViewDetailsProps {
   onNavigateToReport?: () => void;
   onNavigateToDoctorList?: () => void;
   onNavigateToAppointment?: () => void;
+  onNavigateToHistory?: () => void;
+  onNavigateToFeedback?: () => void;
+  onLogout?: () => void;
 }
 
-const ViewDetails: React.FC<ViewDetailsProps> = ({ appointment, onBack, onReschedule, onCancel, onNavigateToReport, onNavigateToDoctorList, onNavigateToAppointment }) => {
+const ViewDetails: React.FC<ViewDetailsProps> = ({ appointment, onBack, onReschedule, onCancel, onNavigateToReport, onNavigateToDoctorList, onNavigateToAppointment, onNavigateToHistory, onNavigateToFeedback, onLogout }) => {
   const [patientData, setPatientData] = useState<Patient | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -310,6 +313,12 @@ const ViewDetails: React.FC<ViewDetailsProps> = ({ appointment, onBack, onResche
       case 'doctors':
         onNavigateToDoctorList?.();
         break;
+      case 'history':
+        onNavigateToHistory?.();
+        break;
+      case 'feedback':
+        onNavigateToFeedback?.();
+        break;
       case 'message':
         console.log('Navigate to messages');
         break;
@@ -320,7 +329,7 @@ const ViewDetails: React.FC<ViewDetailsProps> = ({ appointment, onBack, onResche
         console.log('Navigate to settings');
         break;
       case 'logout':
-        console.log('Handle logout');
+        onLogout?.();
         break;
       default:
         console.log(`Navigating to: ${item}`);
