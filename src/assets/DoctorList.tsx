@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import doctorbg from 'D:/slot pro/project/public/doctorbg.jpg';
+import doctorbg from './doctorbg.jpg';
 import Sidebar from './Sidebar';
 
 interface Doctor {
@@ -24,9 +24,12 @@ interface DoctorListProps {
   onNavigateToOverview?: () => void;
   onNavigateToAppointment?: () => void;
   onNavigateToReport?: () => void;
+  onNavigateToHistory?: () => void;
+  onNavigateToFeedback?: () => void;
+  onLogout?: () => void;
 }
 
-const DoctorList: React.FC<DoctorListProps> = ({ onNavigateToOverview, onNavigateToAppointment, onNavigateToReport }) => {
+const DoctorList: React.FC<DoctorListProps> = ({ onNavigateToOverview, onNavigateToAppointment, onNavigateToReport, onNavigateToHistory, onNavigateToFeedback, onLogout }) => {
   const [selectedDoctor, setSelectedDoctor] = useState<number | null>(null);
   const [activeMenuItem, setActiveMenuItem] = useState<string>('doctors');
 
@@ -36,7 +39,7 @@ const DoctorList: React.FC<DoctorListProps> = ({ onNavigateToOverview, onNavigat
 
   const handleSidebarClick = (item: string) => {
     setActiveMenuItem(item);
-    
+
     // Handle navigation logic
     switch (item) {
       case 'overview':
@@ -48,6 +51,12 @@ const DoctorList: React.FC<DoctorListProps> = ({ onNavigateToOverview, onNavigat
       case 'doctors':
         // Already on doctors list
         break;
+      case 'history':
+        onNavigateToHistory?.();
+        break;
+      case 'feedback':
+        onNavigateToFeedback?.();
+        break;
       case 'message':
         console.log('Navigate to messages');
         break;
@@ -58,7 +67,7 @@ const DoctorList: React.FC<DoctorListProps> = ({ onNavigateToOverview, onNavigat
         console.log('Navigate to settings');
         break;
       case 'logout':
-        console.log('Handle logout');
+        onLogout?.();
         break;
       default:
         console.log(`Navigating to: ${item}`);
@@ -80,7 +89,7 @@ const DoctorList: React.FC<DoctorListProps> = ({ onNavigateToOverview, onNavigat
         "Published 50+ Research Papers",
         "Pioneer in Minimally Invasive Heart Surgery"
       ],
-      languages: ["English", "Tamil", "French","Hindi"],
+      languages: ["English", "Tamil", "French", "Hindi"],
       availability: "Mon, Wed, Fri",
       image: "/woman-doctor-wearing-lab-coat-with-stethoscope-isolated.jpg",
       description: "World-renowned cardiologist specializing in interventional cardiology and preventive heart care. Expert in complex cardiac procedures and has saved thousands of lives.",
@@ -101,7 +110,7 @@ const DoctorList: React.FC<DoctorListProps> = ({ onNavigateToOverview, onNavigat
         "Pioneer in Brain Mapping Technology",
         "1000+ Successful Brain Surgeries"
       ],
-      languages: ["English",  "Tamil"],
+      languages: ["English", "Tamil"],
       availability: "Tue, Thu, Sat",
       image: "/portrait-3d-male-doctor.jpg",
       description: "Leading neurosurgeon with expertise in complex brain and spine surgeries. Known for innovative surgical techniques and exceptional patient outcomes.",
@@ -151,13 +160,13 @@ const DoctorList: React.FC<DoctorListProps> = ({ onNavigateToOverview, onNavigat
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
       <Sidebar activeItem={activeMenuItem} onItemClick={handleSidebarClick} />
-      
+
       <div className="flex-1 ml-64">
         {/* Header */}
-        <div className="relative overflow-hidden bg-img" style={{backgroundImage: `url(${doctorbg})`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat'}}>
+        <div className="relative overflow-hidden bg-img" style={{ backgroundImage: `url(${doctorbg})`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}>
           <div className="absolute inset-0 bg-gradient-to-br from-blue-600"></div>
           <div className="absolute inset-0 bg-black opacity-20"></div>
-          
+
           <div className="relative z-10 text-white py-20 px-8">
             <div className="max-w-7xl mx-auto text-white text-center">
               <div className="mb-6">
@@ -165,12 +174,12 @@ const DoctorList: React.FC<DoctorListProps> = ({ onNavigateToOverview, onNavigat
                   World-Class Medical Excellence
                 </h1>
                 <p className=" ">
-                  Experience unparalleled healthcare with our distinguished team of internationally acclaimed physicians, 
+                  Experience unparalleled healthcare with our distinguished team of internationally acclaimed physicians,
                   each bringing decades of expertise and revolutionary treatments to transform your wellness journey
                 </p>
               </div>
-              
-              
+
+
               <div className="flex justify-center space-x-8 mt-12">
                 <div className="group relative">
                   <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-blue-600 rounded-2xl blur-xl opacity-75 group-hover:opacity-100 transition-opacity"></div>
@@ -179,7 +188,7 @@ const DoctorList: React.FC<DoctorListProps> = ({ onNavigateToOverview, onNavigat
                     <p className="text-sm text-black font-medium">Elite Specialists</p>
                   </div>
                 </div>
-                
+
                 <div className="group relative">
                   <div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-purple-600 rounded-2xl blur-xl opacity-75 group-hover:opacity-100 transition-opacity"></div>
                   <div className="relative bg-white bg-opacity-20 backdrop-blur-lg rounded-2xl px-8 py-6 border border-white border-opacity-30">
@@ -187,7 +196,7 @@ const DoctorList: React.FC<DoctorListProps> = ({ onNavigateToOverview, onNavigat
                     <p className="text-sm text-black font-medium">Years Excellence</p>
                   </div>
                 </div>
-                
+
                 <div className="group relative">
                   <div className="absolute inset-0 bg-gradient-to-r from-pink-400 to-pink-600 rounded-2xl blur-xl opacity-75 group-hover:opacity-100 transition-opacity"></div>
                   <div className="relative bg-white bg-opacity-20 backdrop-blur-lg rounded-2xl px-8 py-6 border border-white border-opacity-30">
@@ -199,7 +208,7 @@ const DoctorList: React.FC<DoctorListProps> = ({ onNavigateToOverview, onNavigat
             </div>
           </div>
         </div>
-        
+
         {/* Enhanced Filter Section */}
         <div className="max-w-7xl mx-auto px-8 py-8">
           <div className="bg-white bg-opacity-80 backdrop-blur-lg rounded-3xl shadow-2xl p-8 border border-white border-opacity-50">
@@ -218,7 +227,7 @@ const DoctorList: React.FC<DoctorListProps> = ({ onNavigateToOverview, onNavigat
                     </svg>
                   </div>
                 </div>
-                
+
                 <div className="relative">
                   <select className="appearance-none bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-xl px-6 py-3 pr-10 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-700 font-medium shadow-sm hover:shadow-md transition-shadow">
                     <option>Experience</option>
@@ -232,7 +241,7 @@ const DoctorList: React.FC<DoctorListProps> = ({ onNavigateToOverview, onNavigat
                     </svg>
                   </div>
                 </div>
-                
+
                 <div className="relative">
                   <select className="appearance-none bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl px-6 py-3 pr-10 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-700 font-medium shadow-sm hover:shadow-md transition-shadow">
                     <option>Price Range</option>
@@ -247,7 +256,7 @@ const DoctorList: React.FC<DoctorListProps> = ({ onNavigateToOverview, onNavigat
                   </div>
                 </div>
               </div>
-              
+
               <div className="flex items-center space-x-4">
                 <button className="group relative bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-3 rounded-xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">
                   <span className="relative z-10">Search</span>
@@ -273,7 +282,7 @@ const DoctorList: React.FC<DoctorListProps> = ({ onNavigateToOverview, onNavigat
               >
                 {/* Shine Effect */}
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-0 group-hover:opacity-20 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-all duration-1000"></div>
-                
+
                 {/* Doctor Image & Basic Info */}
                 <div className="relative">
                   <div className="h-80 bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 relative overflow-hidden">
@@ -286,7 +295,7 @@ const DoctorList: React.FC<DoctorListProps> = ({ onNavigateToOverview, onNavigat
                         target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI2YzZjRmNiIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM2YjcyODAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJtaWRkbGUiPuKAuPCfmKE8L3RleHQ+PC9zdmc+';
                       }}
                     />
-                    
+
                     {/* Enhanced Fee Badge */}
                     <div className="absolute top-4 right-4 group">
                       <div className="bg-gradient-to-r from-amber-400 to-orange-500 text-white rounded-full px-4 py-2 shadow-lg transform group-hover:scale-110 transition-transform">
@@ -294,7 +303,7 @@ const DoctorList: React.FC<DoctorListProps> = ({ onNavigateToOverview, onNavigat
                       </div>
                       <div className="absolute inset-0 bg-amber-400 rounded-full blur-lg opacity-50 animate-pulse"></div>
                     </div>
-                    
+
                     {/* Enhanced Name Overlay */}
                     <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-6">
                       <h3 className="text-2xl font-bold text-white mb-1 group-hover:text-blue-200 transition-colors">{doctor.name}</h3>
