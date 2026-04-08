@@ -72,16 +72,16 @@ const Report: React.FC<ReportProps> = ({ onNavigateToDashboard, onNavigateToAppo
           results: 'Minor inflammation detected',
           notes: 'Slight inflammation observed in lower back region. Recommend follow-up in 3 months.'
         },
-        {
-          id: '4',
-          name: 'Hepatitis Panel',
-          date: '02/11/2023',
-          type: 'Blood Test',
-          status: 'normal',
-          doctorName: 'Dr. James Wilson',
-          results: 'Negative for all types',
-          notes: 'No evidence of hepatitis infection detected.'
-        },
+        // {
+        //   id: '4',
+        //   name: 'Hepatitis Panel',
+        //   date: '02/11/2023',
+        //   type: 'Blood Test',
+        //   status: 'normal',
+        //   doctorName: 'Dr. James Wilson',
+        //   results: 'Negative for all types',
+        //   notes: 'No evidence of hepatitis infection detected.'
+        // },
         {
           id: '5',
           name: 'Calcium',
