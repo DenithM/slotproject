@@ -67,9 +67,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment, onNaviga
 
   const fetchPatientData = async () => {
     try {
-      // Get current user from auth (you may need to implement auth context)
-      // For now, we'll use the same email as in the patient form
-      const userEmail = 'denithrokith@gmail.com'; // This should come from auth context
+      const userEmail = 'denithrokith@gmail.com';
 
       const { data, error } = await supabase
         .from('patients')
@@ -92,11 +90,11 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment, onNaviga
   };
 
   const fetchData = async () => {
-    // Fetch appointments from database
+   
     const fetchAppointments = async () => {
       try {
-        // Get current user's appointments
-        const userEmail = 'denithrokith@gmail.com'; // This should come from auth context
+        
+        const userEmail = 'denithrokith@gmail.com'; 
 
         const { data: patientData, error: patientError } = await supabase
           .from('patients')
@@ -127,7 +125,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment, onNaviga
           console.error('Error fetching appointments:', error);
           setAppointments([]);
         } else {
-          // Transform the data to match the Appointment interface
+          
           const transformedAppointments = (data || []).map((apt: any): Appointment => ({
             id: apt.id,
             doctorName: apt.doctors?.name || 'Unknown Doctor',
