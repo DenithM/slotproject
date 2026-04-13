@@ -49,6 +49,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment, onNaviga
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [patientData, setPatientData] = useState<any>(null);
   const [activeMenuItem, setActiveMenuItem] = useState<string>('overview');
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(false);
 
   useEffect(() => {
     fetchData();
@@ -158,20 +159,20 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment, onNaviga
 
     // Fetch vitals and reports
     // For now, we'll use mock data
-    setVitals([
-      { label: 'Body Temperature', value: '36.2', unit: '°C', icon: '🌡️', trend: 'stable', color: 'blue' },
-      { label: 'Pulse', value: '85', unit: 'bpm', icon: '❤️', trend: 'up', color: 'red' },
-      { label: 'Blood Pressure', value: '80/70', unit: 'mm/Hg', icon: '💉', trend: 'stable', color: 'purple' },
-      { label: 'Breathing Rate', value: '15', unit: 'breaths/m', icon: '🫁', trend: 'down', color: 'green' },
-    ]);
+    // setVitals([
+    //   { label: 'Body Temperature', value: '36.2', unit: '°C', icon: '🌡️', trend: 'stable', color: 'blue' },
+    //   { label: 'Pulse', value: '85', unit: 'bpm', icon: '❤️', trend: 'up', color: 'red' },
+    //   { label: 'Blood Pressure', value: '80/70', unit: 'mm/Hg', icon: '💉', trend: 'stable', color: 'purple' },
+    //   { label: 'Breathing Rate', value: '15', unit: 'breaths/m', icon: '🫁', trend: 'down', color: 'green' },
+    // ]);
 
-    setReports([
-      { id: '1', name: 'Glucose', date: '02/11/2023', type: 'Blood Test', status: 'normal' },
-      { id: '2', name: 'Blood Count', date: '02/11/2023', type: 'CBC', status: 'normal' },
-      { id: '3', name: 'Full Body X-Ray', date: '02/11/2023', type: 'Imaging', status: 'attention' },
-      { id: '4', name: 'Hepatitis Panel', date: '02/11/2023', type: 'Blood Test', status: 'normal' },
-      { id: '5', name: 'Calcium', date: '02/11/2023', type: 'Blood Test', status: 'critical' },
-    ]);
+    // setReports([
+    //   { id: '1', name: 'Glucose', date: '02/11/2023', type: 'Blood Test', status: 'normal' },
+    //   { id: '2', name: 'Blood Count', date: '02/11/2023', type: 'CBC', status: 'normal' },
+    //   { id: '3', name: 'Full Body X-Ray', date: '02/11/2023', type: 'Imaging', status: 'attention' },
+    //   { id: '4', name: 'Hepatitis Panel', date: '02/11/2023', type: 'Blood Test', status: 'normal' },
+    //   { id: '5', name: 'Calcium', date: '02/11/2023', type: 'Blood Test', status: 'critical' },
+    // ]);
   };
 
   const getStatusColor = (status: string) => {
@@ -219,14 +220,14 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment, onNaviga
     return appointmentDate >= today;
   });
 
-  const getTrendIcon = (trend?: string) => {
-    switch (trend) {
-      case 'up': return '📈';
-      case 'down': return '📉';
-      case 'stable': return '➡️';
-      default: return '';
-    }
-  };
+  // const getTrendIcon = (trend?: string) => {
+  //   switch (trend) {
+  //     case 'up': return '📈';
+  //     case 'down': return '📉';
+  //     case 'stable': return '➡️';
+  //     default: return '';
+  //   }
+  // };
 
   const getAppointmentForDate = (date: Date): Appointment | null => {
     const dateString = date.toLocaleDateString('en-US', {
@@ -298,12 +299,21 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment, onNaviga
     }
   };
 
+  const handleToggleSidebar = () => {
+    setIsSidebarCollapsed(!isSidebarCollapsed);
+  };
+
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 w-full">
-      <Sidebar activeItem={activeMenuItem} onItemClick={handleSidebarClick} />
+      <Sidebar 
+        activeItem={activeMenuItem} 
+        onItemClick={handleSidebarClick} 
+        isCollapsed={isSidebarCollapsed}
+        onToggleCollapse={handleToggleSidebar}
+      />
 
       {/* Main Content */}
-      <div className="flex-1 ml-64 flex">
+      <div className={`flex-1 flex transition-all duration-300 ${isSidebarCollapsed ? 'ml-0' : 'ml-64'}`}>
         <div className="flex-1 p-8">
           {/* Greeting */}
           <div className="mb-6">
@@ -338,7 +348,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment, onNaviga
             </div>
           </div>
 
-          {/* Vitals Section */}
+          {/* Vitals Section
           <div className="mb-8">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-light text-gray-800">Vitals</h3>
@@ -348,8 +358,8 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment, onNaviga
                 </svg>
                 Refresh
               </button>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            </div> */}
+            {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {vitals.map((vital, index) => (
                 <div key={index} className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 border border-gray-100">
                   <div className="flex items-center justify-between mb-4">
@@ -373,8 +383,8 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment, onNaviga
                   </div>
                 </div>
               ))}
-            </div>
-          </div>
+            </div> */}
+          {/* </div> */}
 
           {/* Appointments Table */}
           <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
@@ -435,8 +445,8 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment, onNaviga
         {/* Right Sidebar */}
         <div className="w-80 bg-gradient-to-b from-white to-gray-50 p-6 border-l border-gray-100">
           {/* Top Actions */}
-          <div className="flex justify-between items-center mb-6">
-            <div className="flex space-x-3">
+          <div className="flex text-right items-center mb-6 ">
+            {/* <div className="flex space-x-3">
               <button className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-all duration-200">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -449,9 +459,9 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment, onNaviga
                 </svg>
                 <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse"></span>
               </button>
-            </div>
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-lg">
+            </div> */}
+            <div className="flex text-right space-x-3 items-right">
+              <div className="w-20 h-10 bg-gradient-to-r text-right from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-lg ">
                 {patientData ?
                   `${patientData.first_name?.[0]?.toUpperCase() || 'U'}${patientData.last_name?.[0]?.toUpperCase() || 'I'}` :
                   'UI'
@@ -462,10 +472,10 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment, onNaviga
                   onNavigateToPatientInfo(patientData?.id);
                 }
               }}>
-                <p className="text-sm font-semibold text-gray-900">
+                <p className="text-sm font-semibold text-gray-900 text-right items-right">
                   {patientData ? `${patientData.first_name} ${patientData.last_name}` : 'User'}
                 </p>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-gray-500 text-center">
                   {patientData ? (
                     <span className="text-blue-600 hover:text-blue-700 underline">Edit Profile</span>
                   ) : (
@@ -477,7 +487,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment, onNaviga
           </div>
 
           {/* My Reports */}
-          <div className="bg-white rounded-2xl shadow-lg mb-6 border border-gray-100">
+          {/* <div className="bg-white rounded-2xl shadow-lg mb-6 border border-gray-100">
             <div className="p-4 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-light text-gray-800">My Reports</h3>
@@ -506,7 +516,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment, onNaviga
                 </div>
               ))}
             </div>
-          </div>
+          </div> */}
 
           {/* Calendar */}
           <div className="bg-white rounded-2xl shadow-lg mb-6 border border-gray-100">

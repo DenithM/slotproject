@@ -74,6 +74,7 @@ const ViewDetails: React.FC<ViewDetailsProps> = ({ appointment, onBack, onResche
   const [error, setError] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<'reschedule' | 'cancel' | null>(null);
   const [activeMenuItem, setActiveMenuItem] = useState<string>('appointments');
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(false);
 
   // Helper function to create fallback patient data
   const createFallbackPatientData = (level: 'mock' | 'emergency' = 'mock'): Patient => {
@@ -336,11 +337,20 @@ const ViewDetails: React.FC<ViewDetailsProps> = ({ appointment, onBack, onResche
     }
   };
 
+  const handleToggleSidebar = () => {
+    setIsSidebarCollapsed(!isSidebarCollapsed);
+  };
+
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-blue-50 to-white">
-      <Sidebar activeItem={activeMenuItem} onItemClick={handleSidebarClick} />
+      <Sidebar 
+        activeItem={activeMenuItem} 
+        onItemClick={handleSidebarClick} 
+        isCollapsed={isSidebarCollapsed}
+        onToggleCollapse={handleToggleSidebar}
+      />
       
-      <div className="flex-1 ml-64 px-4 py-6">
+      <div className={`flex-1 px-4 py-6 transition-all duration-300 ${isSidebarCollapsed ? 'ml-0' : 'ml-64'}`}>
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <button

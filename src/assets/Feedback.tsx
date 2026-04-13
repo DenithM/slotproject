@@ -26,6 +26,7 @@ const Feedback: React.FC<FeedbackProps> = ({
     const [message, setMessage] = useState('');
     const [recommendation, setRecommendation] = useState<'yes' | 'maybe' | 'no'>('yes');
     const [submitted, setSubmitted] = useState(false);
+    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(false);
     const ratingLabels = ['Poor', 'Fair', 'Good', 'Very Good', 'Excellent'];
 
     const handleSidebarClick = (item: string) => {
@@ -61,6 +62,10 @@ const Feedback: React.FC<FeedbackProps> = ({
         }
     };
 
+    const handleToggleSidebar = () => {
+        setIsSidebarCollapsed(!isSidebarCollapsed);
+    };
+
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         setSubmitted(true);
@@ -68,9 +73,14 @@ const Feedback: React.FC<FeedbackProps> = ({
 
     return (
         <div className="flex min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-            <Sidebar activeItem="feedback" onItemClick={handleSidebarClick} />
+            <Sidebar 
+                activeItem="feedback" 
+                onItemClick={handleSidebarClick} 
+                isCollapsed={isSidebarCollapsed}
+                onToggleCollapse={handleToggleSidebar}
+            />
 
-            <div className="flex-1 ml-64 px-8 py-10">
+            <div className={`flex-1 px-8 py-10 transition-all duration-300 ${isSidebarCollapsed ? 'ml-0' : 'ml-64'}`}>
                 <div className="max-w-5xl mx-auto space-y-8">
                     <div className="flex items-center justify-between gap-4">
                         <div>
