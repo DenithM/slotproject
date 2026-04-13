@@ -3,9 +3,11 @@ import React from 'react';
 interface SidebarProps {
   activeItem: string;
   onItemClick: (item: string) => void;
+  isCollapsed?: boolean;
+  onToggleCollapse?: () => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ activeItem, onItemClick }) => {
+const Sidebar: React.FC<SidebarProps> = ({ activeItem, onItemClick, isCollapsed = false, onToggleCollapse }) => {
   const menuItems = [
     {
       id: 'overview',
@@ -92,36 +94,64 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem, onItemClick }) => {
   ];
 
   return (
-    <div className="w-64 bg-white shadow-lg h-screen fixed left-0 top-0 flex flex-col">
-      {/* Healthcare Button */}
-      <div className="p-6 border-b border-gray-200">
-        <button className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-3 px-4 rounded-lg font-semibold hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-md hover:shadow-lg">
-          Healthcare
-        </button>
-      </div>
+    <>
+      {/* Toggle Button - Center of Sidebar Edge */}
+      <button
+        onClick={onToggleCollapse}
+        className="fixed left-64 top-1/2 -translate-y-1/2 z-50 bg-white shadow-lg border border-gray-200 rounded-l-lg p-2 hover:bg-gray-50 transition-all duration-300 group"
+        style={{
+          left: isCollapsed ? '0px' : '256px',
+          transition: 'left 0.3s ease-in-out'
+        }}
+      >
+        <svg 
+          className={`w-5 h-5 text-gray-600 group-hover:text-gray-800 transition-transform duration-300 ${isCollapsed ? 'rotate-180' : ''}`}
+          fill="none" 
+          stroke="currentColor" 
+          viewBox="0 0 24 24"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+        </svg>
+      </button>
 
-      {/* Navigation Menu */}
-      <nav className="flex-1 p-4">
-        <ul className="space-y-2">
-          {menuItems.map((item) => (
-            <li key={item.id}>
-              <button
-                onClick={() => onItemClick(item.id)}
-                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 ${activeItem === item.id
-                    ? 'bg-blue-100 text-blue-700 font-medium shadow-sm'
-                    : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
-                  }`}
-              >
-                <span className={activeItem === item.id ? 'text-blue-700' : 'text-gray-500'}>
-                  {item.icon}
-                </span>
-                <span>{item.label}</span>
-              </button>
-            </li>
-          ))}
-        </ul>
-      </nav>
-    </div>
+      {/* Sidebar */}
+      <div 
+        className="bg-white shadow-lg h-screen fixed left-0 top-0 flex flex-col transition-all duration-300 ease-in-out"
+        style={{
+          width: isCollapsed ? '0px' : '256px',
+          overflow: isCollapsed ? 'hidden' : 'visible'
+        }}
+      >
+        {/* Healthcare Button */}
+        <div className="p-6 border-b border-gray-200">
+          <button className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-3 px-4 rounded-lg font-semibold hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-md hover:shadow-lg">
+            Healthcare
+          </button>
+        </div>
+
+        {/* Navigation Menu */}
+        <nav className="flex-1 p-4">
+          <ul className="space-y-2">
+            {menuItems.map((item) => (
+              <li key={item.id}>
+                <button
+                  onClick={() => onItemClick(item.id)}
+                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 ${activeItem === item.id
+                      ? 'bg-blue-100 text-blue-700 font-medium shadow-sm'
+                      : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+                    }`}
+                >
+                  <span className={activeItem === item.id ? 'text-blue-700' : 'text-gray-500'}>
+                    {item.icon}
+                  </span>
+                  <span>{item.label}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      </div>
+    </>
   );
 };
 

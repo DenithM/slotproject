@@ -44,6 +44,7 @@ const Appointment: React.FC<{
   const [activeMenuItem, setActiveMenuItem] = useState<string>('appointments');
   const [rescheduleLoading, setRescheduleLoading] = useState(false);
   const isRescheduleMode = Boolean(appointmentToReschedule?.id);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(false);
 
   useEffect(() => {
     fetchDoctors();
@@ -381,12 +382,21 @@ const Appointment: React.FC<{
     }
   };
 
+  const handleToggleSidebar = () => {
+    setIsSidebarCollapsed(!isSidebarCollapsed);
+  };
+
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-      <Sidebar activeItem={activeMenuItem} onItemClick={handleSidebarClick} />
+      <Sidebar 
+        activeItem={activeMenuItem} 
+        onItemClick={handleSidebarClick} 
+        isCollapsed={isSidebarCollapsed}
+        onToggleCollapse={handleToggleSidebar}
+      />
 
 
-      <div className="flex-1 ml-64 p-8">
+      <div className={`flex-1 p-8 transition-all duration-300 ${isSidebarCollapsed ? 'ml-0' : 'ml-64'}`}>
         <div className="max-w-4xl mx-auto">
           {/* Header */}
           <div className="mb-8">

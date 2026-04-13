@@ -32,6 +32,7 @@ interface DoctorListProps {
 const DoctorList: React.FC<DoctorListProps> = ({ onNavigateToOverview, onNavigateToAppointment, onNavigateToReport, onNavigateToHistory, onNavigateToFeedback, onLogout }) => {
   const [selectedDoctor, setSelectedDoctor] = useState<number | null>(null);
   const [activeMenuItem, setActiveMenuItem] = useState<string>('doctors');
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(false);
 
   const handleBookAppointment = () => {
     onNavigateToAppointment?.();
@@ -72,6 +73,10 @@ const DoctorList: React.FC<DoctorListProps> = ({ onNavigateToOverview, onNavigat
       default:
         console.log(`Navigating to: ${item}`);
     }
+  };
+
+  const handleToggleSidebar = () => {
+    setIsSidebarCollapsed(!isSidebarCollapsed);
   };
 
   const doctors: Doctor[] = [
@@ -159,9 +164,14 @@ const DoctorList: React.FC<DoctorListProps> = ({ onNavigateToOverview, onNavigat
 
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-      <Sidebar activeItem={activeMenuItem} onItemClick={handleSidebarClick} />
+      <Sidebar 
+        activeItem={activeMenuItem} 
+        onItemClick={handleSidebarClick} 
+        isCollapsed={isSidebarCollapsed}
+        onToggleCollapse={handleToggleSidebar}
+      />
 
-      <div className="flex-1 ml-64">
+      <div className={`flex-1 transition-all duration-300 ${isSidebarCollapsed ? 'ml-0' : 'ml-64'}`}>
         {/* Header */}
         <div className="relative overflow-hidden bg-img" style={{ backgroundImage: `url(${doctorbg})`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}>
           <div className="absolute inset-0 bg-gradient-to-br from-blue-600"></div>

@@ -1,4 +1,4 @@
--- Create patients table
+
 CREATE TABLE IF NOT EXISTS patients (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   first_name VARCHAR(255) NOT NULL,
@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS patients (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Create doctors table
+
 CREATE TABLE IF NOT EXISTS doctors (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   name VARCHAR(255) NOT NULL,
@@ -53,31 +53,20 @@ CREATE TABLE IF NOT EXISTS appointments (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Insert sample doctors
-INSERT INTO doctors (name, specialization, avatar, available) VALUES
-('Dr. James Carter', 'Cardiologist', '👨‍⚕️', true),
-('Dr. Kelli Jener', 'Neurologist', '👩‍⚕️', true),
-('Dr. Mike Wise', 'Therapist', '👨‍⚕️', true),
-('Dr. Saim Perterson', 'Dentist', '👩‍⚕️', true),
-('Dr. Lionel Smith', 'Cardiologist', '👨‍⚕️', true),
-('Dr. Sarah Johnson', 'Pediatrician', '👩‍⚕️', true),
-('Dr. Robert Brown', 'Orthopedic Surgeon', '👨‍⚕️', true),
-('Dr. Emily Davis', 'Dermatologist', '👩‍⚕️', true)
-ON CONFLICT DO NOTHING;
 
--- Create indexes for better performance
+
 CREATE INDEX IF NOT EXISTS idx_appointments_doctor_id ON appointments(doctor_id);
 CREATE INDEX IF NOT EXISTS idx_appointments_date ON appointments(date);
 CREATE INDEX IF NOT EXISTS idx_appointments_status ON appointments(status);
 CREATE INDEX IF NOT EXISTS idx_doctors_specialization ON doctors(specialization);
 CREATE INDEX IF NOT EXISTS idx_doctors_available ON doctors(available);
 
--- Enable Row Level Security (RLS)
+
 ALTER TABLE patients ENABLE ROW LEVEL SECURITY;
 ALTER TABLE doctors ENABLE ROW LEVEL SECURITY;
 ALTER TABLE appointments ENABLE ROW LEVEL SECURITY;
 
--- Create policies for patients table
+
 CREATE POLICY "Anyone can view patients" ON patients
   FOR SELECT USING (true);
 
@@ -107,8 +96,7 @@ CREATE POLICY "Users can insert their own appointments" ON appointments
 CREATE POLICY "Users can update their own appointments" ON appointments
   FOR UPDATE USING (auth.uid()::text = patient_id);
 
--- For development purposes, you might want to allow all operations
--- Remove these policies in production
+
 CREATE POLICY "Allow all operations on patients for development" ON patients
   FOR ALL USING (true);
 

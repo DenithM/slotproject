@@ -31,6 +31,7 @@ const Report: React.FC<ReportProps> = ({ onNavigateToDashboard, onNavigateToAppo
   const filterType = 'all';
   const filterStatus = 'all';
   const [activeMenuItem, setActiveMenuItem] = useState<string>('reports');
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(false);
 
   useEffect(() => {
     fetchReports();
@@ -72,16 +73,16 @@ const Report: React.FC<ReportProps> = ({ onNavigateToDashboard, onNavigateToAppo
           results: 'Minor inflammation detected',
           notes: 'Slight inflammation observed in lower back region. Recommend follow-up in 3 months.'
         },
-        {
-          id: '4',
-          name: 'Hepatitis Panel',
-          date: '02/11/2023',
-          type: 'Blood Test',
-          status: 'normal',
-          doctorName: 'Dr. James Wilson',
-          results: 'Negative for all types',
-          notes: 'No evidence of hepatitis infection detected.'
-        },
+        // {
+        //   id: '4',
+        //   name: 'Hepatitis Panel',
+        //   date: '02/11/2023',
+        //   type: 'Blood Test',
+        //   status: 'normal',
+        //   doctorName: 'Dr. James Wilson',
+        //   results: 'Negative for all types',
+        //   notes: 'No evidence of hepatitis infection detected.'
+        // },
         {
           id: '5',
           name: 'Calcium',
@@ -441,11 +442,20 @@ const Report: React.FC<ReportProps> = ({ onNavigateToDashboard, onNavigateToAppo
     }
   };
 
+  const handleToggleSidebar = () => {
+    setIsSidebarCollapsed(!isSidebarCollapsed);
+  };
+
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-blue-50 to-white">
-      <Sidebar activeItem={activeMenuItem} onItemClick={handleSidebarClick} />
+      <Sidebar 
+        activeItem={activeMenuItem} 
+        onItemClick={handleSidebarClick} 
+        isCollapsed={isSidebarCollapsed}
+        onToggleCollapse={handleToggleSidebar}
+      />
       
-      <div className="flex-1 ml-64 p-8">
+      <div className={`flex-1 p-8 transition-all duration-300 ${isSidebarCollapsed ? 'ml-0' : 'ml-64'}`}>
         <div className="max-w-7xl mx-auto">
           {/* Header */}
           <div className="flex items-center justify-between mb-8">

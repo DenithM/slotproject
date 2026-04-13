@@ -48,6 +48,7 @@ const PatientHistory: React.FC<PatientHistoryProps> = ({
 }) => {
     const [appointments, setAppointments] = useState<Appointment[]>([]);
     const [loading, setLoading] = useState(true);
+    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(false);
     const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
     const [patient, setPatient] = useState<Patient | null>(null);
     const [showBill, setShowBill] = useState(false);
@@ -113,28 +114,47 @@ const PatientHistory: React.FC<PatientHistoryProps> = ({
         return '100.00';
     };
 
-    const SidebarWrapper = () => (
-        <Sidebar
-            activeItem="history"
-            onItemClick={(item) => {
-                switch (item) {
-                    case 'overview': onNavigateToDashboard(); break;
-                    case 'appointments': onNavigateToAppointment(); break;
-                    case 'doctors': onNavigateToDoctorList(); break;
-                    case 'history': break; // Already on history
-                    case 'reports': onNavigateToReport(); break;
-                    case 'feedback': onNavigateToFeedback(); break;
-                    case 'logout': onLogout(); break;
-                }
-            }}
-        />
-    );
+    const handleSidebarClick = (item: string) => {
+        switch (item) {
+            case 'overview':
+                onNavigateToDashboard();
+                break;
+            case 'appointments':
+                onNavigateToAppointment();
+                break;
+            case 'doctors':
+                onNavigateToDoctorList();
+                break;
+            case 'history':
+                break;
+            case 'feedback':
+                onNavigateToFeedback();
+                break;
+            case 'reports':
+                onNavigateToReport();
+                break;
+            case 'logout':
+                onLogout();
+                break;
+            default:
+                console.log(`Navigating to: ${item}`);
+        }
+    };
+
+    const handleToggleSidebar = () => {
+        setIsSidebarCollapsed(!isSidebarCollapsed);
+    };
 
     return (
         <div className="flex min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-            <SidebarWrapper />
+            <Sidebar 
+                activeItem="history" 
+                onItemClick={handleSidebarClick} 
+                isCollapsed={isSidebarCollapsed}
+                onToggleCollapse={handleToggleSidebar}
+            />
 
-            <div className="flex-1 ml-64 p-8">
+            <div className={`flex-1 p-8 transition-all duration-300 ${isSidebarCollapsed ? 'ml-0' : 'ml-64'}`}>
                 <div className="max-w-5xl mx-auto">
                     {/* Header */}
                     <div className="flex items-center justify-between mb-8">
