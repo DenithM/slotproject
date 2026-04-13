@@ -2,22 +2,22 @@ import React, { useState, useEffect } from "react";
 import { supabase } from '../../client/superbase';
 import Sidebar from './Sidebar';
 
-interface Vital {
-  label: string;
-  value: string;
-  unit: string;
-  icon?: string;
-  trend?: 'up' | 'down' | 'stable';
-  color?: string;
-}
+// interface Vital {
+//   label: string;
+//   value: string;
+//   unit: string;
+//   icon?: string;
+//   trend?: 'up' | 'down' | 'stable';
+//   color?: string;
+// }
 
-interface Report {
-  id: string;
-  name: string;
-  date: string;
-  type?: string;
-  status?: 'normal' | 'attention' | 'critical';
-}
+// interface Report {
+//   id: string;
+//   name: string;
+//   date: string;
+//   type?: string;
+//   status?: 'normal' | 'attention' | 'critical';
+// }
 
 interface Appointment {
   id: string;
@@ -43,8 +43,8 @@ interface DashboardProps {
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment, onNavigateToDoctorList, onNavigateToViewDetails, onNavigateToPatientInfo, onNavigateToReport, onNavigateToHistory, onNavigateToFeedback, onLogout, refreshTrigger }) => {
-  const [vitals, setVitals] = useState<Vital[]>([]);
-  const [reports, setReports] = useState<Report[]>([]);
+  // const [vitals, setVitals] = useState<Vital[]>([]);
+  // const [reports, setReports] = useState<Report[]>([]);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [patientData, setPatientData] = useState<any>(null);
@@ -197,24 +197,24 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment, onNaviga
     }
   };
 
-  const getReportStatusColor = (status?: string) => {
-    switch (status) {
-      case 'normal': return 'bg-green-50 border-green-200 text-green-700';
-      case 'attention': return 'bg-yellow-50 border-yellow-200 text-yellow-700';
-      case 'critical': return 'bg-red-50 border-red-200 text-red-700';
-      default: return 'bg-gray-50 border-gray-200 text-gray-700';
-    }
-  };
+  // const getReportStatusColor = (status?: string) => {
+  //   switch (status) {
+  //     case 'normal': return 'bg-green-50 border-green-200 text-green-700';
+  //     case 'attention': return 'bg-yellow-50 border-yellow-200 text-yellow-700';
+  //     case 'critical': return 'bg-red-50 border-red-200 text-red-700';
+  //     default: return 'bg-gray-50 border-gray-200 text-gray-700';
+  //   }
+  // };
 
-  const getVitalColor = (color?: string) => {
-    switch (color) {
-      case 'blue': return 'from-blue-400 to-blue-600';
-      case 'red': return 'from-red-400 to-red-600';
-      case 'purple': return 'from-purple-400 to-purple-600';
-      case 'green': return 'from-green-400 to-green-600';
-      default: return 'from-gray-400 to-gray-600';
-    }
-  };
+  // const getVitalColor = (color?: string) => {
+  //   switch (color) {
+  //     case 'blue': return 'from-blue-400 to-blue-600';
+  //     case 'red': return 'from-red-400 to-red-600';
+  //     case 'purple': return 'from-purple-400 to-purple-600';
+  //     case 'green': return 'from-green-400 to-green-600';
+  //     default: return 'from-gray-400 to-gray-600';
+  //   }
+  // };
 
   const upcomingAppointments = appointments.filter(appointment => {
     const appointmentDate = new Date(appointment.date);
