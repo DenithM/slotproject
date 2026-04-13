@@ -212,40 +212,15 @@ const ViewDetails: React.FC<ViewDetailsProps> = ({ appointment, onBack, onResche
   }, [appointment]);
 
   const handleReschedule = async () => {
-    try {
-      setActionLoading('reschedule');
+    const shouldReschedule = window.confirm(
+      'Do you want to reschedule this appointment? You will be taken to the appointment form to choose a new slot.'
+    );
 
-      const { error } = await supabase
-        .from('appointments')
-        .update({
-          status: 'rescheduled',
-          updated_at: new Date().toISOString(),
-          reschedule_reason: 'Patient requested reschedule',
-        })
-        .eq('id', appointment.id);
-
-      if (error) {
-        console.error('Error rescheduling appointment:', error);
-        alert('Failed to reschedule appointment. Please try again.');
-      } else {
-        await supabase
-          .from('appointment_logs')
-          .insert({
-            appointment_id: appointment.id,
-            action: 'rescheduled',
-            created_at: new Date().toISOString(),
-            user_id: patientData?.id || 'unknown',
-          });
-
-        alert('Appointment rescheduled successfully!');
-        onReschedule?.(appointment);
-      }
-    } catch (err) {
-      console.error('Error:', err);
-      alert('An error occurred while rescheduling.');
-    } finally {
-      setActionLoading(null);
+    if (!shouldReschedule) {
+      return;
     }
+
+    onReschedule?.(appointment);
   };
 
   const handleCancel = async () => {
@@ -261,8 +236,6 @@ const ViewDetails: React.FC<ViewDetailsProps> = ({ appointment, onBack, onResche
         .update({
           status: 'cancelled',
           updated_at: new Date().toISOString(),
-          cancelled_at: new Date().toISOString(),
-          cancellation_reason: 'Patient cancelled appointment',
         })
         .eq('id', appointment.id);
 
@@ -270,25 +243,6 @@ const ViewDetails: React.FC<ViewDetailsProps> = ({ appointment, onBack, onResche
         console.error('Error cancelling appointment:', error);
         alert('Failed to cancel appointment. Please try again.');
       } else {
-        await supabase
-          .from('appointment_logs')
-          .insert({
-            appointment_id: appointment.id,
-            action: 'cancelled',
-            created_at: new Date().toISOString(),
-            user_id: patientData?.id || 'unknown',
-          });
-
-        await supabase
-          .from('notifications')
-          .insert({
-            user_id: patientData?.id || 'unknown',
-            type: 'appointment_cancelled',
-            message: `Your appointment with ${appointment.doctorName} on ${appointment.date} has been cancelled`,
-            created_at: new Date().toISOString(),
-            read: false,
-          });
-
         alert('Appointment cancelled successfully!');
         onCancel?.(appointment);
       }
@@ -302,7 +256,7 @@ const ViewDetails: React.FC<ViewDetailsProps> = ({ appointment, onBack, onResche
 
   const handleSidebarClick = (item: string) => {
     setActiveMenuItem(item);
-    
+
     // Handle navigation logic
     switch (item) {
       case 'overview':

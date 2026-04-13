@@ -126,8 +126,12 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment, onNaviga
           console.error('Error fetching appointments:', error);
           setAppointments([]);
         } else {
-          
-          const transformedAppointments = (data || []).map((apt: any): Appointment => ({
+          const visibleAppointments = (data || []).filter(
+            (apt: any) => !['cancelled', 'rescheduled'].includes(apt.status)
+          );
+
+          // Transform the data to match the Appointment interface
+          const transformedAppointments = visibleAppointments.map((apt: any): Appointment => ({
             id: apt.id,
             doctorName: apt.doctors?.name || 'Unknown Doctor',
             specialization: apt.doctors?.specialization || 'General',
