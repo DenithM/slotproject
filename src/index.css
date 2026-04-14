@@ -17,7 +17,7 @@
   --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
   --mono: ui-monospace, Consolas, monospace;
 
-  font: 18px/145% var(--sans);
+  font: clamp(16px, 1.125rem, 18px)/145% var(--sans);
   letter-spacing: 0.18px;
   color-scheme: light dark;
   color: var(--text);
@@ -27,8 +27,16 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
+  @media (max-width: 1440px) {
+    font-size: 17px;
+  }
+  
   @media (max-width: 1024px) {
     font-size: 16px;
+  }
+  
+  @media (max-width: 768px) {
+    font-size: 15px;
   }
 }
 
@@ -55,13 +63,27 @@
 #root {
   width: 100%;
   max-width: 100%;
-  margin: 0;
+  margin: 0 auto;
   text-align: left;
   border-inline: none;
   min-height: 100svh;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
+}
+
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+  box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 0 16px;
+  }
 }
 
 body {
@@ -76,24 +98,33 @@ h2 {
 }
 
 h1 {
-  font-size: 56px;
+  font-size: clamp(28px, 4vw, 56px);
   letter-spacing: -1.68px;
-  margin: 32px 0;
+  margin: clamp(16px, 2vw, 32px) 0;
 
   @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: 20px 0;
+    font-size: clamp(24px, 3.5vw, 36px);
+    margin: clamp(12px, 1.5vw, 20px) 0;
+  }
+  
+  @media (max-width: 768px) {
+    font-size: clamp(20px, 3vw, 28px);
+    margin: clamp(8px, 1vw, 16px) 0;
   }
 }
 
 h2 {
-  font-size: 24px;
+  font-size: clamp(18px, 2vw, 24px);
   line-height: 118%;
   letter-spacing: -0.24px;
   margin: 0 0 8px;
 
   @media (max-width: 1024px) {
-    font-size: 20px;
+    font-size: clamp(16px, 1.8vw, 20px);
+  }
+  
+  @media (max-width: 768px) {
+    font-size: clamp(14px, 1.6vw, 18px);
   }
 }
 
