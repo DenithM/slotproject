@@ -98,9 +98,9 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem, onItemClick, isCollapsed 
       {/* Toggle Button - Center of Sidebar Edge */}
       <button
         onClick={onToggleCollapse}
-        className="fixed left-64 top-1/2 -translate-y-1/2 z-50 bg-white shadow-lg border border-gray-200 rounded-l-lg p-2 hover:bg-gray-50 transition-all duration-300 group"
+        className="fixed left-16 lg:left-64 top-1/2 -translate-y-1/2 z-50 bg-white shadow-lg border border-gray-200 rounded-l-lg p-2 hover:bg-gray-50 transition-all duration-300 group lg:block"
         style={{
-          left: isCollapsed ? '0px' : '256px',
+          left: isCollapsed ? '0px' : window.innerWidth >= 1024 ? '256px' : '64px',
           transition: 'left 0.3s ease-in-out'
         }}
       >
@@ -114,11 +114,26 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem, onItemClick, isCollapsed 
         </svg>
       </button>
 
+      {/* Mobile Menu Button */}
+      <button
+        onClick={onToggleCollapse}
+        className="lg:hidden fixed top-4 left-4 z-50 bg-white shadow-lg border border-gray-200 rounded-lg p-2 hover:bg-gray-50 transition-all duration-300"
+      >
+        <svg 
+          className="w-5 h-5 text-gray-600"
+          fill="none" 
+          stroke="currentColor" 
+          viewBox="0 0 24 24"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </button>
+
       {/* Sidebar */}
       <div 
-        className="bg-white shadow-lg h-screen fixed left-0 top-0 flex flex-col transition-all duration-300 ease-in-out"
+        className="bg-white shadow-lg h-screen fixed left-0 top-0 flex flex-col transition-all duration-300 ease-in-out z-40"
         style={{
-          width: isCollapsed ? '0px' : '256px',
+          width: isCollapsed ? '0px' : window.innerWidth >= 1024 ? '256px' : '64px',
           overflow: isCollapsed ? 'hidden' : 'visible'
         }}
       >

@@ -308,7 +308,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment, onNaviga
   };
 
   return (
-    <div className="flex min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 w-full">
+    <div className="flex min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 w-full overflow-x-hidden">
       <Sidebar 
         activeItem={activeMenuItem} 
         onItemClick={handleSidebarClick} 
@@ -317,8 +317,8 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment, onNaviga
       />
 
       {/* Main Content */}
-      <div className={`flex-1 flex transition-all duration-300 ${isSidebarCollapsed ? 'ml-0' : 'ml-64'}`}>
-        <div className="flex-1 p-8">
+      <div className={`flex-1 flex transition-all duration-300 min-w-0 ${isSidebarCollapsed ? 'ml-0' : 'ml-16 lg:ml-64'}`}>
+        <div className="flex-1 p-4 lg:p-8 min-w-0">
           {/* Greeting */}
           <div className="mb-6">
             <div className="flex items-center justify-between">
@@ -447,7 +447,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment, onNaviga
         </div>
 
         {/* Right Sidebar */}
-        <div className="w-80 bg-gradient-to-b from-white to-gray-50 p-6 border-l border-gray-100">
+        <div className="hidden xl:block w-80 bg-gradient-to-b from-white to-gray-50 p-6 border-l border-gray-100 flex-shrink-0">
           {/* Top Actions */}
           <div className="flex text-right items-center mb-6 ">
             {/* <div className="flex space-x-3">
