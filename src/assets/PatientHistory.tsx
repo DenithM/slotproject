@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { supabase } from '../../client/superbase';
 import Sidebar from "./Sidebar";
+import { useAuth } from '../contexts/AuthContext';
 
 interface Appointment {
     id: string;
@@ -46,6 +47,7 @@ const PatientHistory: React.FC<PatientHistoryProps> = ({
     onLogout,
     refreshTrigger
 }) => {
+    const { user } = useAuth();
     const [appointments, setAppointments] = useState<Appointment[]>([]);
     const [loading, setLoading] = useState(true);
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(false);
@@ -53,23 +55,47 @@ const PatientHistory: React.FC<PatientHistoryProps> = ({
     const [patient, setPatient] = useState<Patient | null>(null);
     const [showBill, setShowBill] = useState(false);
 
-    const userEmail = 'denithrokith@gmail.com'; // Hardcoded as per existing project logic
-
     useEffect(() => {
         fetchData();
     }, [refreshTrigger]);
 
     const fetchData = async () => {
-        console.log('Fetching patient history for:', userEmail);
+        if (!user) {
+            setPatient(null);
+            setAppointments([]);
+            setLoading(false);
+            return;
+        }
+
+        console.log('Fetching patient history for:', user.email);
         try {
             setLoading(true);
 
-            // Fetch patient details
-            const { data: patientData, error: patientError } = await supabase
+            // First try to find patient by auth user_id
+            let { data: patientData, error: patientError } = await supabase
                 .from('patients')
                 .select('*')
-                .eq('email', userEmail)
+                .eq('user_id', String(user.id)) // Convert to string for UUID compatibility
                 .single();
+
+            // If not found by user_id, try by email (for backward compatibility)
+            if (patientError && patientError.code === 'PGRST116') {
+                const { data: emailData, error: emailError } = await supabase
+                    .from('patients')
+                    .select('*')
+                    .eq('email', user.email)
+                    .single();
+
+                if (!emailError && emailData) {
+                    // Update the patient record to include user_id for future queries
+                    await supabase
+                        .from('patients')
+                        .update({ user_id: String(user.id) }) // Convert to string
+                        .eq('id', String(emailData.id)); // Convert to string
+                    patientData = emailData;
+                    patientError = null;
+                }
+            }
 
             if (patientError) throw patientError;
             setPatient(patientData);
@@ -84,7 +110,7 @@ const PatientHistory: React.FC<PatientHistoryProps> = ({
             specialization
           )
         `)
-                .eq('patient_id', patientData.id)
+                .eq('patient_id', String(patientData.id)) // Convert to string
                 .order('date', { ascending: false });
 
             if (apptError) throw apptError;

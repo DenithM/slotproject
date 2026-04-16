@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../client/superbase';
+import { useAuth } from '../contexts/AuthContext';
 
 interface PatientFormData {
   firstName: string;
@@ -34,6 +35,7 @@ interface PatientinfoProps {
 }
 
 const Patientinfo: React.FC<PatientinfoProps> = ({ onBack, onSave, patientId }) => {
+  const { user } = useAuth();
   const [formData, setFormData] = useState<PatientFormData>({
     firstName: '',
     lastName: '',
@@ -70,6 +72,16 @@ const Patientinfo: React.FC<PatientinfoProps> = ({ onBack, onSave, patientId }) 
       fetchPatientData();
     }
   }, [patientId]);
+
+  // Set email from authenticated user
+  useEffect(() => {
+    if (user?.email && !patientId) {
+      setFormData(prev => ({
+        ...prev,
+        email: user.email || ''
+      }));
+    }
+  }, [user, patientId]);
 
   const fetchPatientData = async () => {
     try {
@@ -157,6 +169,12 @@ const Patientinfo: React.FC<PatientinfoProps> = ({ onBack, onSave, patientId }) 
     setError(null);
     setSuccess(null);
 
+    if (!user) {
+      setError('You must be logged in to save patient information');
+      setLoading(false);
+      return;
+    }
+
     try {
       // Test Supabase connection first
       const isConnected = await testSupabaseConnection();
@@ -194,9 +212,10 @@ const Patientinfo: React.FC<PatientinfoProps> = ({ onBack, onSave, patientId }) 
 
       // Prepare data for Supabase
       const patientData = {
+        user_id: user?.id,
         first_name: formData.firstName,
         last_name: formData.lastName,
-        email: formData.email,
+        email: user?.email || formData.email, // Use authenticated user's email
         phone: formData.phone,
         date_of_birth: formData.dateOfBirth,
         gender: formData.gender,
@@ -359,9 +378,12 @@ const Patientinfo: React.FC<PatientinfoProps> = ({ onBack, onSave, patientId }) 
                   name="email"
                   value={formData.email}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50"
                   required
+                  readOnly
+                  title="Email is automatically set from your login"
                 />
+                <p className="text-xs text-gray-500 mt-1">Email is automatically set from your logged-in account</p>
               </div>
 
               <div>

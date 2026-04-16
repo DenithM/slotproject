@@ -164,16 +164,17 @@ const DoctorList: React.FC<DoctorListProps> = ({ onNavigateToOverview, onNavigat
 
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      <div className="w-[80px]">
       <Sidebar 
         activeItem={activeMenuItem} 
         onItemClick={handleSidebarClick} 
         isCollapsed={isSidebarCollapsed}
         onToggleCollapse={handleToggleSidebar}
       />
-
+</div>
       <div className={`flex-1 transition-all duration-300 ${isSidebarCollapsed ? 'ml-0' : 'ml-64'}`}>
         {/* Header */}
-        <div className="relative overflow-hidden bg-img" style={{ backgroundImage: `url(${doctorbg})`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}>
+        <div className="relative overflow-hidden bg-img" style={{ backgroundImage: `url(${doctorbg})`, backgroundSize: 'cover', backgroundPosition: 'right', backgroundRepeat: 'no-repeat',  }}>
           <div className="absolute inset-0 bg-gradient-to-br from-blue-600"></div>
           <div className="absolute inset-0 bg-black opacity-20"></div>
 
@@ -220,7 +221,7 @@ const DoctorList: React.FC<DoctorListProps> = ({ onNavigateToOverview, onNavigat
         </div>
 
         {/* Enhanced Filter Section */}
-        <div className="max-w-7xl mx-auto px-8 py-8">
+        {/* <div className="max-w-7xl mx-auto px-8 py-8">
           <div className="bg-white bg-opacity-80 backdrop-blur-lg rounded-3xl shadow-2xl p-8 border border-white border-opacity-50">
             <div className="flex flex-wrap items-center justify-between gap-6">
               <div className="flex items-center space-x-6">
@@ -278,9 +279,11 @@ const DoctorList: React.FC<DoctorListProps> = ({ onNavigateToOverview, onNavigat
               </div>
             </div>
           </div>
-        </div>
+        </div> */}
 
         {/* Enhanced Doctors Grid */}
+        <br />
+        <br />
         <div className="max-w-7xl mx-auto px-8 pb-16">
           <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-10">
             {doctors.map((doctor) => (

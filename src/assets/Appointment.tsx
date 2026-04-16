@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../client/superbase';
 import Sidebar from './Sidebar';
+import { useAuth } from '../contexts/AuthContext';
 
 interface Doctor {
   id: string;
@@ -27,7 +28,9 @@ const Appointment: React.FC<{
   onLogout?: () => void;
   appointmentToReschedule?: { id: string } | null;
   onNavigateToViewDetails?: (appointment: any) => void;
-}> = ({ onBack, onNavigateToReport, onNavigateToDoctorList, onNavigateToHistory, onNavigateToFeedback, onLogout, appointmentToReschedule, onNavigateToViewDetails }) => {
+  onRefreshDashboard?: () => void;
+}> = ({ onBack, onNavigateToReport, onNavigateToDoctorList, onNavigateToHistory, onNavigateToFeedback, onLogout, appointmentToReschedule, onNavigateToViewDetails, onRefreshDashboard }) => {
+  const { user } = useAuth();
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -134,7 +137,7 @@ const Appointment: React.FC<{
         .eq('status', 'scheduled');
 
       if (excludeAppointmentId) {
-        query = query.neq('id', excludeAppointmentId);
+        query = query.neq('id', excludeAppointmentId); // Convert to string
       }
 
       const { data, error } = await query;
@@ -166,7 +169,7 @@ const Appointment: React.FC<{
         .eq('status', 'scheduled');
 
       if (excludeAppointmentId) {
-        query = query.neq('id', excludeAppointmentId);
+        query = query.neq('id', excludeAppointmentId); // Convert to string
       }
 
       const { data, error } = await query;
@@ -223,28 +226,84 @@ const Appointment: React.FC<{
         return;
       }
 
-      // Get the current patient (using the same logic as Dashboard)
-      const userEmail = 'denithrokith@gmail.com'; // This should come from auth context
-      const { data: patientData, error: patientError } = await supabase
+      // Get the current patient using authenticated user
+      console.log('Current user state:', { user: user, userId: user?.id, userEmail: user?.email, userIdType: typeof user?.id });
+      
+      if (!user) {
+        setErrorMessage('You must be logged in to book an appointment.');
+        setSubmitting(false);
+        return;
+      }
+
+      // First try to find patient by auth user_id
+      let { data: patientData, error: patientError } = await supabase
         .from('patients')
-        .select('id')
-        .eq('email', userEmail)
+        .select('*')
+        .eq('user_id', user.id) // Use UUID directly
         .single();
 
+      // If not found by user_id, try by email (for backward compatibility)
+      if (patientError && patientError.code === 'PGRST116') {
+        const { data: emailData, error: emailError } = await supabase
+          .from('patients')
+          .select('*')
+          .eq('email', user.email)
+          .single();
+
+        if (!emailError && emailData) {
+          // Update the patient record to include user_id for future queries
+          await supabase
+            .from('patients')
+            .update({ user_id: user.id }) // Use UUID directly
+            .eq('id', emailData.id); // Use UUID directly
+          
+          patientData = emailData;
+          patientError = null;
+        }
+      }
+
       if (patientError || !patientData) {
+        console.error('Patient data error:', patientError);
         setErrorMessage('Patient profile not found. Please complete your patient information first.');
         setSubmitting(false);
         return;
       }
 
+      console.log('Found patient data:', patientData);
+      console.log('Patient ID type:', typeof patientData.id, 'Patient ID value:', patientData.id);
+
+      // Use UUID directly for database compatibility
+      console.log('Using patient ID directly:', patientData.id);
+
       let saveError = null;
+
+      // Ensure date is in correct format (YYYY-MM-DD)
+      let formattedDate = formData.date;
+      if (formData.date.includes('-')) {
+        // Check if date is in DD-MM-YYYY format and convert if needed
+        const dateParts = formData.date.split('-');
+        if (dateParts.length === 3 && dateParts[0].length === 2) {
+          // Convert DD-MM-YYYY to YYYY-MM-DD
+          formattedDate = `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`;
+        }
+      }
+
+      console.log('Attempting to save appointment with data:', {
+        patient_id: patientData.id,
+        doctor_id: formData.doctorId,
+        original_date: formData.date,
+        formatted_date: formattedDate,
+        time: formData.time,
+        reason: formData.reason,
+        type: formData.type
+      });
 
       if (appointmentToReschedule?.id) {
         const { error } = await supabase
           .from('appointments')
           .update({
             doctor_id: formData.doctorId,
-            date: formData.date,
+            date: formattedDate,
             time: formData.time,
             reason: formData.reason,
             type: formData.type,
@@ -255,13 +314,13 @@ const Appointment: React.FC<{
 
         saveError = error;
       } else {
-        const { error } = await supabase
+        const { error, data } = await supabase
           .from('appointments')
           .insert([
             {
-              patient_id: patientData.id,
+              patient_id: patientData.id, // Use UUID directly
               doctor_id: formData.doctorId,
-              date: formData.date,
+              date: formattedDate,
               time: formData.time,
               reason: formData.reason,
               type: formData.type,
@@ -270,25 +329,95 @@ const Appointment: React.FC<{
             }
           ]);
 
+        console.log('Appointment insert result:', { error, data });
         saveError = error;
       }
 
       if (saveError) {
         console.error('Error saving appointment:', saveError);
+        console.error('Full error details:', JSON.stringify(saveError, null, 2));
+        
+        // Show detailed error to user for debugging
+        const errorDetails = `Error: ${saveError.message || 'Unknown error'} (Code: ${saveError.code || 'N/A'})`;
         setErrorMessage(
           appointmentToReschedule?.id
-            ? 'Failed to reschedule appointment. Please try again.'
-            : 'Failed to book appointment. Please try again.'
+            ? `Failed to reschedule appointment. ${errorDetails}`
+            : `Failed to book appointment. ${errorDetails}`
         );
       } else {
+        // Refresh dashboard immediately after successful save
+        if (onRefreshDashboard) {
+          console.log('Refreshing dashboard immediately after save...');
+          onRefreshDashboard(); 
+          console.log('Dashboard refresh called successfully');
+        }
+
+        // Also trigger a second refresh after a short delay to ensure data consistency
+        setTimeout(() => {
+          if (onRefreshDashboard) {
+            console.log('Second refresh for data consistency...');
+            onRefreshDashboard();
+          }
+        }, 500);
+
+        // Send confirmation email for new bookings only
+        if (!appointmentToReschedule?.id) {
+          try {
+            const { data: doctorData } = await supabase
+              .from('doctors')
+              .select('name')
+              .eq('id', formData.doctorId)
+              .single();
+
+            const { error: emailError } = await supabase.functions.invoke('appointment-email', {
+              body: JSON.stringify({
+                email: user.email,
+                name: patientData.first_name || 'Patient',
+                date: new Date(formattedDate).toLocaleDateString('en-US', {
+                  weekday: 'long',
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
+                }),
+                doctorName: doctorData?.name || 'Doctor',
+                time: formData.time,
+                type: formData.type
+              })
+            });
+
+            if (emailError) {
+              console.error('Error sending email:', emailError);
+              console.error('Email error details:', JSON.stringify(emailError, null, 2));
+              console.error('Email error context:', {
+                user_email: user.email,
+                patient_name: patientData.first_name,
+                doctor_id: formData.doctorId,
+                function_response: emailError
+              });
+              // Show a warning to user but don't fail the appointment booking
+              setErrorMessage(`Email failed: ${emailError.message || 'Unknown error'}. Appointment booked successfully!`);
+              setTimeout(() => setErrorMessage(''), 8000);
+            } else {
+              console.log('Confirmation email sent successfully');
+              setSuccessMessage('Appointment booked successfully! Confirmation email sent.');
+            }
+          } catch (emailErr) {
+            console.error('Error invoking email function:', emailErr);
+            console.error('Email invocation error details:', JSON.stringify(emailErr, null, 2));
+            // Show a warning to user but don't fail the appointment booking
+            setErrorMessage('Appointment booked successfully, but confirmation email failed to send. Please check your email settings.');
+            setTimeout(() => setErrorMessage(''), 5000);
+          }
+        }
+
         setSuccessMessage(
           appointmentToReschedule?.id
             ? 'Appointment rescheduled successfully!'
             : 'Appointment booked successfully!'
         );
 
-        const appointmentId = appointmentToReschedule?.id;
-
+        // For new bookings, we need to fetch the newly created appointment
+        // For reschedules, we use the existing appointmentId
         const appointmentQuery = supabase
           .from('appointments')
           .select(`
@@ -303,9 +432,9 @@ const Appointment: React.FC<{
           .eq('date', formData.date)
           .eq('time', formData.time);
 
-        const { data: newAppointment, error: fetchError } = appointmentId
-          ? await appointmentQuery.eq('id', appointmentId).single()
-          : await appointmentQuery.eq('patient_id', patientData.id).single();
+        const { data: newAppointment, error: fetchError } = appointmentToReschedule?.id
+          ? await appointmentQuery.eq('id', appointmentToReschedule.id).single() // Use existing appointment
+          : await appointmentQuery.eq('patient_id', patientData.id).single(); // Get newly created appointment
 
         if (!fetchError && newAppointment && onNavigateToViewDetails) {
           const appointmentDetails = {
@@ -319,11 +448,22 @@ const Appointment: React.FC<{
             }),
             time: newAppointment.time,
             status: 'Upcoming' as const,
-            avatar: newAppointment.doctors?.avatar || '👨‍⚕️',
+            avatar: newAppointment.doctors?.avatar || '',
             location: newAppointment.type === 'online' ? 'Online' : 'Hospital'
           };
 
-          onNavigateToViewDetails(appointmentDetails);
+          // Show success message and navigate first
+          setTimeout(() => {
+            console.log('Navigating to View Details...');
+            onNavigateToViewDetails(appointmentDetails);
+            
+            // Refresh dashboard immediately after successful booking
+            if (onRefreshDashboard) {
+              console.log('Refreshing dashboard immediately...');
+              onRefreshDashboard(); 
+              console.log('Dashboard refresh called successfully');
+            }
+          }, 1000); // 1 second delay
         }
 
         setFormData({
