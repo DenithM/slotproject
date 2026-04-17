@@ -82,13 +82,13 @@ interface DashboardProps {
   onLogout?: () => void;
 
   refreshTrigger?: number;
-  onRefresh?: () => void;
+  // onRefresh?: () => void;
 
 }
 
 
 
-const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment, onNavigateToDoctorList, onNavigateToViewDetails, onNavigateToPatientInfo, onNavigateToReport, onNavigateToHistory, onNavigateToFeedback, onLogout, refreshTrigger, onRefresh }) => {
+const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment, onNavigateToDoctorList, onNavigateToViewDetails, onNavigateToPatientInfo, onNavigateToReport, onNavigateToHistory, onNavigateToFeedback, onLogout, refreshTrigger }) => {
   const { user } = useAuth();
 
   // const [vitals, setVitals] = useState<Vital[]>([]);
