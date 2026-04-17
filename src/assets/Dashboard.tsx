@@ -82,7 +82,6 @@ interface DashboardProps {
   onLogout?: () => void;
 
   refreshTrigger?: number;
-  // onRefresh?: () => void;
 
 }
 
