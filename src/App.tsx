@@ -45,12 +45,12 @@ function App() {
     setCurrentView('viewdetails');
   };
 
-  // const handleRescheduleAppointment = (appointment: any) => {
+  // const handleRescheduleAppointment = () => {
   //   // Handle reschedule logic - could navigate to appointment booking with pre-filled data
   //   setCurrentView('appointment');
   // };
 
-  // const handleCancelAppointment = (appointment: any) => {
+  // const handleCancelAppointment = () => {
   //   // Handle cancel logic - could show confirmation and refresh dashboard
   //   setRefreshTrigger(prev => prev + 1);
   //   setCurrentView('dashboard');
