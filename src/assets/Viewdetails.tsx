@@ -245,6 +245,7 @@ const ViewDetails: React.FC<ViewDetailsProps> = ({ appointment, onBack, onResche
       } else {
         alert('Appointment cancelled successfully!');
         onCancel?.(appointment);
+        onNavigateToAppointment?.();
       }
     } catch (err) {
       console.error('Error:', err);

@@ -106,10 +106,7 @@ const Appointment: React.FC<{
 
       if (error) {
         console.error('Error fetching doctors:', error);
-
-        setDoctors([
-
-        ]);
+        setDoctors([]);
       } else {
         setDoctors(data || []);
       }
@@ -137,7 +134,7 @@ const Appointment: React.FC<{
         .eq('status', 'scheduled');
 
       if (excludeAppointmentId) {
-        query = query.neq('id', excludeAppointmentId); // Convert to string
+        query = query.neq('id', excludeAppointmentId);
       }
 
       const { data, error } = await query;
@@ -169,7 +166,7 @@ const Appointment: React.FC<{
         .eq('status', 'scheduled');
 
       if (excludeAppointmentId) {
-        query = query.neq('id', excludeAppointmentId); // Convert to string
+        query = query.neq('id', excludeAppointmentId);
       }
 
       const { data, error } = await query;
@@ -194,7 +191,6 @@ const Appointment: React.FC<{
       [name]: value
     }));
 
-    // Fetch unavailable slots when doctor or date changes
     if (name === 'doctorId' || name === 'date') {
       const newFormData = { ...formData, [name]: value };
       getUnavailableSlots(
@@ -212,7 +208,6 @@ const Appointment: React.FC<{
     setSuccessMessage('');
 
     try {
-      // Check if doctor is available at the selected date and time
       const isAvailable = await checkDoctorAvailability(
         formData.doctorId,
         formData.date,
@@ -226,23 +221,18 @@ const Appointment: React.FC<{
         return;
       }
 
-      // Get the current patient using authenticated user
-      console.log('Current user state:', { user: user, userId: user?.id, userEmail: user?.email, userIdType: typeof user?.id });
-      
       if (!user) {
         setErrorMessage('You must be logged in to book an appointment.');
         setSubmitting(false);
         return;
       }
 
-      // First try to find patient by auth user_id
       let { data: patientData, error: patientError } = await supabase
         .from('patients')
         .select('*')
-        .eq('user_id', user.id) // Use UUID directly
+        .eq('user_id', user.id)
         .single();
 
-      // If not found by user_id, try by email (for backward compatibility)
       if (patientError && patientError.code === 'PGRST116') {
         const { data: emailData, error: emailError } = await supabase
           .from('patients')
@@ -251,12 +241,11 @@ const Appointment: React.FC<{
           .single();
 
         if (!emailError && emailData) {
-          // Update the patient record to include user_id for future queries
           await supabase
             .from('patients')
-            .update({ user_id: user.id }) // Use UUID directly
-            .eq('id', emailData.id); // Use UUID directly
-          
+            .update({ user_id: user.id })
+            .eq('id', emailData.id);
+
           patientData = emailData;
           patientError = null;
         }
@@ -269,34 +258,15 @@ const Appointment: React.FC<{
         return;
       }
 
-      console.log('Found patient data:', patientData);
-      console.log('Patient ID type:', typeof patientData.id, 'Patient ID value:', patientData.id);
-
-      // Use UUID directly for database compatibility
-      console.log('Using patient ID directly:', patientData.id);
-
-      let saveError = null;
-
-      // Ensure date is in correct format (YYYY-MM-DD)
       let formattedDate = formData.date;
       if (formData.date.includes('-')) {
-        // Check if date is in DD-MM-YYYY format and convert if needed
         const dateParts = formData.date.split('-');
         if (dateParts.length === 3 && dateParts[0].length === 2) {
-          // Convert DD-MM-YYYY to YYYY-MM-DD
           formattedDate = `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`;
         }
       }
 
-      console.log('Attempting to save appointment with data:', {
-        patient_id: patientData.id,
-        doctor_id: formData.doctorId,
-        original_date: formData.date,
-        formatted_date: formattedDate,
-        time: formData.time,
-        reason: formData.reason,
-        type: formData.type
-      });
+      let saveError = null;
 
       if (appointmentToReschedule?.id) {
         const { error } = await supabase
@@ -314,11 +284,11 @@ const Appointment: React.FC<{
 
         saveError = error;
       } else {
-        const { error, data } = await supabase
+        const { error } = await supabase
           .from('appointments')
           .insert([
             {
-              patient_id: patientData.id, // Use UUID directly
+              patient_id: patientData.id,
               doctor_id: formData.doctorId,
               date: formattedDate,
               time: formData.time,
@@ -329,112 +299,39 @@ const Appointment: React.FC<{
             }
           ]);
 
-        console.log('Appointment insert result:', { error, data });
+        // ✅ Email is sent automatically by DB trigger — no frontend call needed
         saveError = error;
       }
 
       if (saveError) {
         console.error('Error saving appointment:', saveError);
-        console.error('Full error details:', JSON.stringify(saveError, null, 2));
-        
-        // Show detailed error to user for debugging
-        const errorDetails = `Error: ${saveError.message || 'Unknown error'} (Code: ${saveError.code || 'N/A'})`;
         setErrorMessage(
           appointmentToReschedule?.id
-            ? `Failed to reschedule appointment. ${errorDetails}`
-            : `Failed to book appointment. ${errorDetails}`
+            ? `Failed to reschedule appointment. ${saveError.message}`
+            : `Failed to book appointment. ${saveError.message}`
         );
       } else {
-        // Refresh dashboard immediately after successful save
         if (onRefreshDashboard) {
-          console.log('Refreshing dashboard immediately after save...');
-          onRefreshDashboard(); 
-          console.log('Dashboard refresh called successfully');
-        }
-
-        // Also trigger a second refresh after a short delay to ensure data consistency
-        setTimeout(() => {
-          if (onRefreshDashboard) {
-            console.log('Second refresh for data consistency...');
-            onRefreshDashboard();
-          }
-        }, 500);
-
-        // Send confirmation email for new bookings only
-        if (!appointmentToReschedule?.id) {
-          try {
-            const { data: doctorData } = await supabase
-              .from('doctors')
-              .select('name')
-              .eq('id', formData.doctorId)
-              .single();
-
-            const { error: emailError } = await supabase.functions.invoke('appointment-email', {
-              body: JSON.stringify({
-                email: user.email,
-                name: patientData.first_name || 'Patient',
-                date: new Date(formattedDate).toLocaleDateString('en-US', {
-                  weekday: 'long',
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric'
-                }),
-                doctorName: doctorData?.name || 'Doctor',
-                time: formData.time,
-                type: formData.type
-              })
-            });
-
-            if (emailError) {
-              console.error('Error sending email:', emailError);
-              console.error('Email error details:', JSON.stringify(emailError, null, 2));
-              console.error('Email error context:', {
-                user_email: user.email,
-                patient_name: patientData.first_name,
-                doctor_id: formData.doctorId,
-                function_response: emailError
-              });
-              // Show a warning to user but don't fail the appointment booking
-              setErrorMessage(`Email failed: ${emailError.message || 'Unknown error'}. Appointment booked successfully!`);
-              setTimeout(() => setErrorMessage(''), 8000);
-            } else {
-              console.log('Confirmation email sent successfully');
-              setSuccessMessage('Appointment booked successfully! Confirmation email sent.');
-            }
-          } catch (emailErr) {
-            console.error('Error invoking email function:', emailErr);
-            console.error('Email invocation error details:', JSON.stringify(emailErr, null, 2));
-            // Show a warning to user but don't fail the appointment booking
-            setErrorMessage('Appointment booked successfully, but confirmation email failed to send. Please check your email settings.');
-            setTimeout(() => setErrorMessage(''), 5000);
-          }
+          onRefreshDashboard();
+          setTimeout(() => onRefreshDashboard(), 500);
         }
 
         setSuccessMessage(
           appointmentToReschedule?.id
             ? 'Appointment rescheduled successfully!'
-            : 'Appointment booked successfully!'
+            : 'Appointment booked successfully! A confirmation email has been sent to you.'
         );
 
-        // For new bookings, we need to fetch the newly created appointment
-        // For reschedules, we use the existing appointmentId
         const appointmentQuery = supabase
           .from('appointments')
-          .select(`
-            *,
-            doctors:doctor_id (
-              name,
-              specialization,
-              avatar
-            )
-          `)
+          .select(`*, doctors:doctor_id (name, specialization, avatar)`)
           .eq('doctor_id', formData.doctorId)
           .eq('date', formData.date)
           .eq('time', formData.time);
 
         const { data: newAppointment, error: fetchError } = appointmentToReschedule?.id
-          ? await appointmentQuery.eq('id', appointmentToReschedule.id).single() // Use existing appointment
-          : await appointmentQuery.eq('patient_id', patientData.id).single(); // Get newly created appointment
+          ? await appointmentQuery.eq('id', appointmentToReschedule.id).single()
+          : await appointmentQuery.eq('patient_id', patientData.id).single();
 
         if (!fetchError && newAppointment && onNavigateToViewDetails) {
           const appointmentDetails = {
@@ -452,27 +349,13 @@ const Appointment: React.FC<{
             location: newAppointment.type === 'online' ? 'Online' : 'Hospital'
           };
 
-          // Show success message and navigate first
           setTimeout(() => {
-            console.log('Navigating to View Details...');
             onNavigateToViewDetails(appointmentDetails);
-            
-            // Refresh dashboard immediately after successful booking
-            if (onRefreshDashboard) {
-              console.log('Refreshing dashboard immediately...');
-              onRefreshDashboard(); 
-              console.log('Dashboard refresh called successfully');
-            }
-          }, 1000); // 1 second delay
+            if (onRefreshDashboard) onRefreshDashboard();
+          }, 1000);
         }
 
-        setFormData({
-          doctorId: '',
-          date: '',
-          time: '',
-          reason: '',
-          type: 'in-person'
-        });
+        setFormData({ doctorId: '', date: '', time: '', reason: '', type: 'in-person' });
       }
     } catch (error) {
       console.error('Error:', error);
@@ -490,55 +373,31 @@ const Appointment: React.FC<{
 
   const handleSidebarClick = (item: string) => {
     setActiveMenuItem(item);
-
-    // Handle navigation logic
     switch (item) {
-      case 'overview':
-        onBack();
-        break;
-      case 'appointments':
-        // Already on appointments
-        break;
-      case 'doctors':
-        onNavigateToDoctorList?.();
-        break;
-      case 'history':
-        onNavigateToHistory?.();
-        break;
-      case 'feedback':
-        onNavigateToFeedback?.();
-        break;
-      case 'message':
-        console.log('Navigate to messages');
-        break;
-      case 'reports':
-        onNavigateToReport?.();
-        break;
-      case 'logout':
-        onLogout?.();
-        break;
-      default:
-        console.log(`Navigating to: ${item}`);
+      case 'overview': onBack(); break;
+      case 'appointments': break;
+      case 'doctors': onNavigateToDoctorList?.(); break;
+      case 'history': onNavigateToHistory?.(); break;
+      case 'feedback': onNavigateToFeedback?.(); break;
+      case 'reports': onNavigateToReport?.(); break;
+      case 'logout': onLogout?.(); break;
+      default: console.log(`Navigating to: ${item}`);
     }
   };
 
-  const handleToggleSidebar = () => {
-    setIsSidebarCollapsed(!isSidebarCollapsed);
-  };
+  const handleToggleSidebar = () => setIsSidebarCollapsed(!isSidebarCollapsed);
 
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-      <Sidebar 
-        activeItem={activeMenuItem} 
-        onItemClick={handleSidebarClick} 
+      <Sidebar
+        activeItem={activeMenuItem}
+        onItemClick={handleSidebarClick}
         isCollapsed={isSidebarCollapsed}
         onToggleCollapse={handleToggleSidebar}
       />
 
-
       <div className={`flex-1 p-8 transition-all duration-300 ${isSidebarCollapsed ? 'ml-0' : 'ml-64'}`}>
         <div className="max-w-4xl mx-auto">
-          {/* Header */}
           <div className="mb-8">
             <h1 className="text-3xl font-light text-gray-800 mb-2">
               {isRescheduleMode ? 'Reschedule Appointment' : 'Book an Appointment'}
@@ -550,7 +409,6 @@ const Appointment: React.FC<{
             </p>
           </div>
 
-          {/* Success/Error Messages */}
           {successMessage && (
             <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg text-green-700">
               {successMessage}
@@ -567,14 +425,10 @@ const Appointment: React.FC<{
             </div>
           )}
 
-          {/* Appointment Form */}
           <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Doctor Selection */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Select Doctor *
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Select Doctor *</label>
                 {loading ? (
                   <div className="text-gray-500">Loading doctors...</div>
                 ) : (
@@ -595,12 +449,9 @@ const Appointment: React.FC<{
                 )}
               </div>
 
-              {/* Date and Time */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Date *
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Date *</label>
                   <input
                     type="date"
                     name="date"
@@ -612,9 +463,7 @@ const Appointment: React.FC<{
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Time *
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Time *</label>
                   <select
                     name="time"
                     value={formData.time}
@@ -626,12 +475,7 @@ const Appointment: React.FC<{
                     {timeSlots.map((time) => {
                       const isUnavailable = unavailableSlots.includes(time);
                       return (
-                        <option
-                          key={time}
-                          value={time}
-                          disabled={isUnavailable}
-                          className={isUnavailable ? 'text-gray-400' : ''}
-                        >
+                        <option key={time} value={time} disabled={isUnavailable} className={isUnavailable ? 'text-gray-400' : ''}>
                           {isUnavailable ? `${time} (Booked)` : time}
                         </option>
                       );
@@ -645,42 +489,22 @@ const Appointment: React.FC<{
                 </div>
               </div>
 
-              {/* Appointment Type */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Appointment Type *
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Appointment Type *</label>
                 <div className="flex space-x-4">
                   <label className="flex items-center">
-                    <input
-                      type="radio"
-                      name="type"
-                      value="in-person"
-                      checked={formData.type === 'in-person'}
-                      onChange={handleInputChange}
-                      className="mr-2 text-blue-600 focus:ring-blue-500"
-                    />
+                    <input type="radio" name="type" value="in-person" checked={formData.type === 'in-person'} onChange={handleInputChange} className="mr-2 text-blue-600 focus:ring-blue-500" />
                     <span className="text-gray-700">In-Person</span>
                   </label>
                   <label className="flex items-center">
-                    <input
-                      type="radio"
-                      name="type"
-                      value="online"
-                      checked={formData.type === 'online'}
-                      onChange={handleInputChange}
-                      className="mr-2 text-blue-600 focus:ring-blue-500"
-                    />
+                    <input type="radio" name="type" value="online" checked={formData.type === 'online'} onChange={handleInputChange} className="mr-2 text-blue-600 focus:ring-blue-500" />
                     <span className="text-gray-700">Online Consultation</span>
                   </label>
                 </div>
               </div>
 
-              {/* Reason for Visit */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Reason for Visit *
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Reason for Visit *</label>
                 <textarea
                   name="reason"
                   value={formData.reason}
@@ -692,7 +516,6 @@ const Appointment: React.FC<{
                 />
               </div>
 
-              {/* Submit Button */}
               <div className="flex justify-end space-x-4">
                 <button
                   type="button"

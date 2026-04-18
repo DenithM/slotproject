@@ -905,7 +905,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment, onNaviga
         <div className="w-80 bg-gradient-to-b from-white to-gray-50 p-6 border-l border-gray-100">
 
           {/* Patient Information Card */}
-          {patientData && (
+          {patientData ? (
             <div className="bg-white rounded-2xl shadow-lg mb-6 border border-gray-100">
               <div className="p-4 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
                 <div className="flex items-center justify-between">
@@ -977,6 +977,23 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment, onNaviga
                     <span className="ml-1 font-medium text-blue-600">{patientData.medications}</span>
                   </div>
                 )}
+              </div>
+            </div>
+          ) : (
+            <div className="bg-white rounded-2xl shadow-lg mb-6 border border-gray-100">
+              <div className="p-4 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
+                <h3 className="text-lg font-light text-gray-800">Patient Information</h3>
+              </div>
+              <div className="p-4 text-center">
+                <div className="text-6xl mb-4">??</div>
+                <h4 className="text-lg font-semibold text-gray-800 mb-2">No Patient Profile</h4>
+                <p className="text-sm text-gray-500 mb-4">Create your patient profile to manage appointments and personal health information</p>
+                <button 
+                  onClick={() => onNavigateToPatientInfo?.()}
+                  className="w-full bg-blue-600 text-white px-4 py-3 rounded-lg font-medium hover:bg-blue-700 transition-all duration-200 shadow-lg"
+                >
+                  Create Patient Profile
+                </button>
               </div>
             </div>
           )}
