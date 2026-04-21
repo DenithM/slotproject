@@ -686,10 +686,19 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment, onNaviga
                   <h3 className="text-2xl font-light mb-2">Find best doctors with Health Care</h3>
 
                   <p className="text-base opacity-90 mb-4">Connect with top medical professionals and manage your health journey</p>
+<br/>
+                  <button onClick={() => {
 
-                  <button onClick={onNavigateToAppointment} className="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-all duration-200 shadow-lg">
+                  const patientId2 = patientData?.id;
 
-                    Book Appointment →
+                  if (!patientId2) {
+                     onNavigateToPatientInfo?.();   
+                  } else {
+                     onNavigateToAppointment?.();  
+                  }
+                }} className="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-all duration-200 shadow-lg">
+
+                   {!patientData? 'Create Profile →' : 'Book Appointment →'}
 
                   </button>
 
