@@ -44,7 +44,9 @@ function App() {
     setSelectedAppointment(appointment);
     setCurrentView('viewdetails');
   };
-
+  const handleLogout = () => {
+    setCurrentView('login');
+  };
   // const handleRescheduleAppointment = () => {
   //   // Handle reschedule logic - could navigate to appointment booking with pre-filled data
   //   setCurrentView('appointment');
@@ -72,6 +74,7 @@ function App() {
             onNavigateToHistory={handleNavigateToHistory}
             onNavigateToFeedback={handleNavigateToFeedback}
             onRefreshDashboard={() => setRefreshTrigger(prev => prev + 1)}
+            onLogout={handleLogout}
           />
         ) : currentView === 'doctorlist' ? (
           <DoctorList 
@@ -80,6 +83,7 @@ function App() {
             onNavigateToReport={handleNavigateToReport}
             onNavigateToHistory={handleNavigateToHistory}
             onNavigateToFeedback={handleNavigateToFeedback}
+            onLogout={handleLogout}
           />
         ) : currentView === 'viewdetails' ? (
           <ViewDetails 
@@ -91,6 +95,7 @@ function App() {
             onNavigateToDoctorList={() => setCurrentView('doctorlist')}
             onNavigateToHistory={handleNavigateToHistory}
             onNavigateToFeedback={handleNavigateToFeedback}
+            onLogout={handleLogout}
           />
         ) : currentView === 'patientinfo' ? (
           <Patientinfo 
@@ -108,6 +113,7 @@ function App() {
             onNavigateToDoctorList={() => setCurrentView('doctorlist')}
             onNavigateToHistory={handleNavigateToHistory}
             onNavigateToFeedback={handleNavigateToFeedback}
+            onLogout={handleLogout}
           />
         ) : currentView === 'feedback' ? (
           <Feedback 
@@ -117,7 +123,7 @@ function App() {
             onNavigateToDoctorList={() => setCurrentView('doctorlist')}
             onNavigateToHistory={handleNavigateToHistory}
             onNavigateToReport={handleNavigateToReport}
-            onLogout={() => setCurrentView('login')}
+            onLogout={handleLogout}
           />
         ) : currentView === 'history' ? (
           <PatientHistory 
@@ -127,8 +133,8 @@ function App() {
             onNavigateToDoctorList={() => setCurrentView('doctorlist')}
             onNavigateToFeedback={handleNavigateToFeedback}
             onNavigateToReport={handleNavigateToReport}
-            onLogout={() => setCurrentView('login')}
             refreshTrigger={refreshTrigger}
+            onLogout={handleLogout}
           />
         ) : (
           <Dashboard 
@@ -141,6 +147,7 @@ function App() {
             onNavigateToFeedback={handleNavigateToFeedback}
             onNavigateToHistory={handleNavigateToHistory}
             refreshTrigger={refreshTrigger} 
+            onLogout={handleLogout}
             // onRefresh={() => setRefreshTrigger(prev => prev + 1)}
           />
         )}
