@@ -299,7 +299,7 @@ const Appointment: React.FC<{
             }
           ]);
 
-        // ✅ Email is sent automatically by DB trigger — no frontend call needed
+        // Email
         saveError = error;
       }
 

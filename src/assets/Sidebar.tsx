@@ -190,15 +190,43 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem, onItemClick, isCollapsed 
 
   return (
 
-    <>
+    <div className='flex flex-col md:flex-row gap-4'>
 
-      {/* Toggle Button - Center of Sidebar Edge */}
+      {/* Mobile Toggle Button - Only visible on small screens */}
 
       <button
 
         onClick={onToggleCollapse}
 
-        className="fixed left-64 top-1/2 -translate-y-1/2 z-50 bg-white shadow-lg border border-gray-200 rounded-l-lg p-2 hover:bg-gray-50 transition-all duration-300 group"
+        className="lg:hidden fixed top-4 left-4 z-50 bg-white shadow-lg border border-gray-200 rounded-lg p-2 hover:bg-gray-50 transition-all duration-300 group"
+
+      >
+
+        <svg 
+
+          className={`w-5 h-5 text-gray-600 group-hover:text-gray-800 transition-transform duration-300 ${isCollapsed ? 'rotate-180' : ''}`}
+
+          fill="none" 
+
+          stroke="currentColor" 
+
+          viewBox="0 0 24 24"
+
+        >
+
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+
+        </svg>
+
+      </button>
+
+      {/* Desktop Toggle Button - Only visible on large screens */}
+
+      <button
+
+        onClick={onToggleCollapse}
+
+        className="hidden lg:flex fixed left-64 top-1/2 -translate-y-1/2 z-50 bg-white shadow-lg border border-gray-200 rounded-l-lg p-2 hover:bg-gray-50 transition-all duration-300 group"
 
         style={{
 
@@ -234,7 +262,9 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem, onItemClick, isCollapsed 
 
       <div 
 
-        className="bg-white shadow-lg h-screen fixed left-0 top-0 flex flex-col transition-all duration-300 ease-in-out"
+        className={`bg-white shadow-lg h-screen fixed left-0 top-0 flex flex-col transition-all duration-300 ease-in-out z-40 ${
+          isCollapsed ? 'w-0' : 'w-64'
+        } lg:w-64`}
 
         style={{
 
@@ -304,7 +334,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem, onItemClick, isCollapsed 
 
       </div>
 
-    </>
+    </div>
 
   );
 
