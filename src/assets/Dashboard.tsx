@@ -657,36 +657,40 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment, onNaviga
 
       {/* Main Content */}
 
-      <div className={`flex-1 flex transition-all duration-300 ${isSidebarCollapsed ? 'ml-0' : 'ml-64'}`}>
+      <div className={`flex-1 flex transition-all duration-300 ease-in-out ${
+        isSidebarCollapsed 
+          ? 'ml-0 lg:ml-0' 
+          : 'ml-0 lg:ml-64'
+      }`}>
 
-        <div className="flex-1 p-8">
+        <div className="flex-1 p-4 sm:p-6 lg:p-8 xl:p-10">
 
           {/* Greeting */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-light text-gray-800 mb-2">Good Morning {patientData?.first_name || 'User'}</h1>
-          <p className="text-gray-600">Here's your health overview for today.</p>
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-light text-gray-800 mb-2">Hi {patientData?.first_name || 'User'}</h1>
+          <p className="text-gray-600 text-sm sm:text-base">Here's your health overview for today.</p>
         </div>
 
 
 
           {/* Banner */}
 
-          <div className="bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 rounded-2xl p-8 mb-8 text-white relative overflow-hidden shadow-2xl ">
+          <div className="bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 rounded-2xl p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8 text-white relative overflow-hidden shadow-2xl ">
 
-            <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full -mr-32 -mt-32"></div>
+            <div className="absolute top-0 right-0 w-32 sm:w-48 lg:w-64 h-32 sm:h-48 lg:h-64 bg-white opacity-5 rounded-full -mr-16 sm:-mr-24 lg:-mr-32 -mt-16 sm:-mt-24 lg:-mt-32"></div>
 
-            <div className="absolute bottom-0 left-0 w-48 h-48 bg-white opacity-5 rounded-full -ml-24 -mb-24"></div>
+            <div className="absolute bottom-0 left-0 w-24 sm:w-36 lg:w-48 h-24 sm:h-36 lg:h-48 bg-white opacity-5 rounded-full -ml-12 sm:-ml-18 lg:-ml-24 -mb-12 sm:-mb-18 lg:-mb-24"></div>
 
             <div className="relative z-10">
 
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
 
                 <div className="flex-1">
 
-                  <h3 className="text-2xl font-light mb-2">Find best doctors with Health Care</h3>
+                  <h3 className="text-xl sm:text-2xl font-light mb-2">Find best doctors with Health Care</h3>
 
-                  <p className="text-base opacity-90 mb-4">Connect with top medical professionals and manage your health journey</p>
-<br/>
+                  <p className="text-sm sm:text-base opacity-90 mb-4">Connect with top medical professionals and manage your health journey</p>
+                  <br/>
                   <button onClick={() => {
 
                   const patientId2 = patientData?.id;
@@ -696,7 +700,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment, onNaviga
                   } else {
                      onNavigateToAppointment?.();  
                   }
-                }} className="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-all duration-200 shadow-lg">
+                }} className="bg-white text-blue-600 px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold hover:bg-blue-50 transition-all duration-200 shadow-lg w-full sm:w-auto">
 
                    {!patientData? 'Create Profile →' : 'Book Appointment →'}
 
@@ -704,7 +708,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment, onNaviga
 
                 </div>
 
-                <div className="text-9xl opacity-20 ml-8">👨‍⚕️</div>
+                <div className="text-6xl sm:text-8xl lg:text-9xl opacity-20 sm:ml-4 lg:ml-8 text-center sm:text-right">👨‍⚕️</div>
 
               </div>
 
@@ -794,13 +798,13 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment, onNaviga
 
           <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
 
-            <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
+            <div className="p-4 sm:p-6 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
 
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
 
                 <h3 className="text-lg font-light text-gray-800">Appointments</h3>
 
-                <button onClick={onNavigateToAppointment} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-all duration-200">
+                <button onClick={onNavigateToAppointment} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-all duration-200 w-full sm:w-auto">
 
                   + New Appointment
 
@@ -812,23 +816,23 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment, onNaviga
 
             <div className="overflow-x-auto">
 
-              <table className="w-full">
+              <table className="w-full min-w-[600px]">
 
                 <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
 
                   <tr>
 
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Doctor</th>
+                    <th className="px-4 sm:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Doctor</th>
 
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Specialization</th>
+                    <th className="px-4 sm:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider hidden sm:table-cell">Specialization</th>
 
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Date</th>
+                    <th className="px-4 sm:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Date</th>
 
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Time</th>
+                    <th className="px-4 sm:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Time</th>
 
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Location</th>
+                    <th className="px-4 sm:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider hidden md:table-cell">Location</th>
 
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
+                    <th className="px-4 sm:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
 
                   </tr>
 
@@ -838,7 +842,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment, onNaviga
 
                   {upcomingAppointments.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
+                      <td colSpan={6} className="px-4 sm:px-6 py-6 sm:py-8 text-center text-gray-500">
                         <div className="text-4xl mb-2">??</div>
                         <div>No appointments found. Debug info: {appointments.length} total appointments loaded. Patient data: {patientData ? 'Found' : 'Not found'}, User: {user ? 'Logged in' : 'Not logged in'}</div>
                       </td>
@@ -848,11 +852,11 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment, onNaviga
 
                     <tr key={appointment.id} className="hover:bg-gradient-to-r hover:from-blue-50 hover:to-transparent transition-all duration-200">
 
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
 
                         <div className="flex items-center">
 
-                          <div className="w-10 h-10 bg-gradient-to-r from-blue-100 to-blue-200 rounded-full flex items-center justify-center text-lg mr-3">
+                          <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-blue-100 to-blue-200 rounded-full flex items-center justify-center text-sm sm:text-lg mr-2 sm:mr-3">
 
                             {appointment.avatar}
 
@@ -862,7 +866,9 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment, onNaviga
 
                             <span className="text-sm font-semibold text-gray-900">{appointment.doctorName}</span>
 
-                            <div className="text-xs text-gray-500">ID: {appointment.id}</div>
+                            <div className="text-xs text-gray-500 hidden sm:block">ID: {appointment.id}</div>
+
+                            <div className="text-xs text-gray-500 sm:hidden">{appointment.specialization}</div>
 
                           </div>
 
@@ -870,23 +876,23 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment, onNaviga
 
                       </td>
 
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap hidden sm:table-cell">
 
                         <span className="text-sm text-gray-700 font-medium">{appointment.specialization}</span>
 
                       </td>
 
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{appointment.date}</td>
+                      <td className="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-600">{appointment.date}</td>
 
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{appointment.time}</td>
+                      <td className="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-600">{appointment.time}</td>
 
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{appointment.location}</td>
+                      <td className="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-600 hidden md:table-cell">{appointment.location}</td>
 
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
 
-                        <span className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full border ${getStatusColor(appointment.status)}`}>
+                        <span className={`px-2 sm:px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full border ${getStatusColor(appointment.status)}`}>
 
-                          <span className={`w-2 h-2 rounded-full ${getStatusDot(appointment.status)} mr-2`}></span>
+                          <span className={`w-2 h-2 rounded-full ${getStatusDot(appointment.status)} mr-1 sm:mr-2`}></span>
 
                           {appointment.status}
 
@@ -911,7 +917,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment, onNaviga
 
         {/* Right Sidebar */}
 
-        <div className="w-80 bg-gradient-to-b from-white to-gray-50 p-6 border-l border-gray-100">
+        <div className="hidden xl:block w-80 bg-gradient-to-b from-white to-gray-50 p-6 border-l border-gray-100">
 
           {/* Patient Information Card */}
           {patientData ? (
