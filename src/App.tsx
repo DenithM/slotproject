@@ -98,7 +98,7 @@ function App() {
             onNavigateToHistory={handleNavigateToHistory}
             onNavigateToFeedback={handleNavigateToFeedback}
             onLogout={handleLogout}
-            onNavigateToPatientInfo={handleNavigateToPatientInfo}
+            
           />
         ) : currentView === 'patientinfo' ? (
           <Patientinfo 

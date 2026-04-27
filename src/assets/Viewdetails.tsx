@@ -66,10 +66,9 @@ interface ViewDetailsProps {
   onNavigateToHistory?: () => void;
   onNavigateToFeedback?: () => void;
   onLogout?: () => void;
-  onNavigateToPatientInfo?: () => void;
 }
 
-const ViewDetails: React.FC<ViewDetailsProps> = ({ appointment, onBack, onReschedule, onCancel, onNavigateToReport, onNavigateToDoctorList, onNavigateToAppointment, onNavigateToHistory, onNavigateToFeedback, onLogout, onNavigateToPatientInfo }) => {
+const ViewDetails: React.FC<ViewDetailsProps> = ({ appointment, onBack, onReschedule, onCancel, onNavigateToReport, onNavigateToDoctorList, onNavigateToAppointment, onNavigateToHistory, onNavigateToFeedback, onLogout }) => {
   const [patientData, setPatientData] = useState<Patient | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
