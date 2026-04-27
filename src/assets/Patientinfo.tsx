@@ -32,9 +32,14 @@ interface PatientinfoProps {
   onBack?: () => void;
   onSave?: (patient: PatientFormData) => void;
   patientId?: string;
+  onNavigateToHistory?: () => void;
+  onNavigateToFeedback?: () => void;
+  onLogout?: () => void;
+  onNavigateToAppointment?: () => void;
+  onNavigateToReport?: () => void;
 }
 
-const Patientinfo: React.FC<PatientinfoProps> = ({ onBack, onSave, patientId }) => {
+const Patientinfo: React.FC<PatientinfoProps> = ({ onBack, onSave, patientId}) => {
   const { user } = useAuth();
   const [formData, setFormData] = useState<PatientFormData>({
     firstName: '',
@@ -66,14 +71,14 @@ const Patientinfo: React.FC<PatientinfoProps> = ({ onBack, onSave, patientId }) 
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  // Load existing patient data if patientId is provided
+  
   useEffect(() => {
     if (patientId) {
       fetchPatientData();
     }
   }, [patientId]);
 
-  // Set email from authenticated user
+
   useEffect(() => {
     if (user?.email && !patientId) {
       setFormData(prev => ({
@@ -142,7 +147,7 @@ const Patientinfo: React.FC<PatientinfoProps> = ({ onBack, onSave, patientId }) 
     try {
       console.log('Testing Supabase connection...');
       
-      // Test if we can access the patients table
+      
       const { error } = await supabase
         .from('patients')
         .select('id')
@@ -184,7 +189,7 @@ const Patientinfo: React.FC<PatientinfoProps> = ({ onBack, onSave, patientId }) 
         return;
       }
 
-      // Validate required fields
+      
       const requiredFields = ['firstName', 'lastName', 'email', 'phone', 'dateOfBirth'];
       const missingFields = requiredFields.filter(field => !formData[field as keyof PatientFormData]);
       
@@ -317,8 +322,8 @@ const Patientinfo: React.FC<PatientinfoProps> = ({ onBack, onSave, patientId }) 
             <span className="font-medium">Back</span>
           </button>
           
-          <div className="text-center">
-            <h1 className="text-3xl font-bold text-blue-900 mb-2">
+          <div className="text-center  w-full">
+            <h1 className="text-3xl text-center font-bold text-blue-900 mb-2 w-full">
               {patientId ? 'Edit Patient Information' : 'Add New Patient'}
             </h1>
             <p className="text-gray-600">Fill in the patient details below</p>

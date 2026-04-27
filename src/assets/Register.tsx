@@ -38,14 +38,14 @@ function Register({ onSwitchToLogin }: { onSwitchToLogin: () => void }) {
         alert(error.message);
       } else if (data.user) {
         console.log("Registration success:", data);
-        alert("Registration successful! You can now login.");
+        alert("Registration successful! You can check your mail for verification.");
       } else {
         console.log("Registration data:", data);
         alert("Registration completed. You can now login.");
       }
     },
   });
-
+      
   return (
     <div className="min-h-screen flex">
       {/* Left section: Register Form */}

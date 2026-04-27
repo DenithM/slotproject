@@ -114,21 +114,21 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment, onNaviga
     
     fetchData();
     
-    // Log after data fetch completes
+    
     setTimeout(() => {
       console.log('Appointments count after refresh:', appointments.length);
     }, 1000);
 
   }, [refreshTrigger]);
 
-  // Also fetch data when component mounts or when user returns to dashboard
+
   useEffect(() => {
     console.log('=== DASHBOARD MOUNT/VISIBLE ===');
     console.log('Fetching initial data...');
     fetchData();
-  }, [user]); // Depend on user to refetch when user changes or component mounts
+  }, [user]); 
 
-  // Fetch appointments when patientData changes
+
   useEffect(() => {
     if (patientData) {
       console.log('=== PATIENT DATA UPDATED ===');
@@ -555,6 +555,22 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment, onNaviga
 
 
 
+  const handlePreviousMonth = () => {
+
+    setSelectedDate(new Date(selectedDate.getFullYear(), selectedDate.getMonth() - 1, 1));
+
+  };
+
+
+
+  const handleNextMonth = () => {
+
+    setSelectedDate(new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 1));
+
+  };
+
+
+
   const handleSidebarClick = (item: string) => {
 
     setActiveMenuItem(item);
@@ -607,9 +623,9 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment, onNaviga
 
         break;
 
-      case 'settings':
+      case 'profile-icon':
 
-        console.log('Navigate to settings');
+        onNavigateToPatientInfo?.(patientData?.id);
 
         break;
 
@@ -864,7 +880,12 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment, onNaviga
 
                           <div>
 
-                            <span className="text-sm font-semibold text-gray-900">{appointment.doctorName}</span>
+                            <button 
+                              onClick={() => onNavigateToViewDetails?.(appointment)}
+                              className="text-sm font-semibold text-gray-900 hover:text-blue-600 transition-colors duration-200 cursor-pointer"
+                            >
+                              {appointment.doctorName}
+                            </button>
 
                             <div className="text-xs text-gray-500 hidden sm:block">ID: {appointment.id}</div>
 
@@ -920,7 +941,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment, onNaviga
         <div className="hidden xl:block w-80 bg-gradient-to-b from-white to-gray-50 p-6 border-l border-gray-100">
 
           {/* Patient Information Card */}
-          {patientData ? (
+          {/* {patientData ? (
             <div className="bg-white rounded-2xl shadow-lg mb-6 border border-gray-100">
               <div className="p-4 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
                 <div className="flex items-center justify-between">
@@ -1011,7 +1032,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment, onNaviga
                 </button>
               </div>
             </div>
-          )}
+          )} */}
 
           
 
@@ -1086,15 +1107,35 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment, onNaviga
 
             <div className="p-4 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
 
-              <h3 className="text-lg font-light text-gray-800">Calendar</h3>
+              <h3 className="text-lg font-light text-center font-bold text-gray-800">Calendar</h3>
 
             </div>
 
             <div className="p-4">
 
-              <div className="text-center mb-4">
+              <div className="flex items-center justify-between mb-4">
+
+                <button 
+                  onClick={handlePreviousMonth}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+                  aria-label="Previous month"
+                >
+                  <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
 
                 <h4 className="text-lg font-bold text-gray-800">{formatMonthYear(selectedDate)}</h4>
+
+                <button 
+                  onClick={handleNextMonth}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+                  aria-label="Next month"
+                >
+                  <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
 
               </div>
 

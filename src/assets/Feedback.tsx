@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import Sidebar from './Sidebar';
-
+import { supabase } from '../../client/superbase';
+import { useAuth } from '../contexts/AuthContext';
 interface FeedbackProps {
     onBack: () => void;
     onNavigateToDashboard: () => void;
@@ -9,18 +10,20 @@ interface FeedbackProps {
     onNavigateToHistory: () => void;
     onNavigateToReport: () => void;
     onLogout: () => void;
+    onNavigateToPatientInfo: (patientId: string) => void;
 }
 
 const Feedback: React.FC<FeedbackProps> = ({
-    onBack,
+    // onBack,
     onNavigateToDashboard,
     onNavigateToAppointment,
     onNavigateToDoctorList,
     onNavigateToHistory,
     onNavigateToReport,
     onLogout,
+    onNavigateToPatientInfo,
 }) => {
-    const [rating, setRating] = useState(5);
+    const [rating, setRating] = useState(0);
     const [hoverRating, setHoverRating] = useState(0);
     const [category, setCategory] = useState('overall-experience');
     const [message, setMessage] = useState('');
@@ -28,6 +31,40 @@ const Feedback: React.FC<FeedbackProps> = ({
     const [submitted, setSubmitted] = useState(false);
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(false);
     const ratingLabels = ['Poor', 'Fair', 'Good', 'Very Good', 'Excellent'];
+    const [patientData,setPatientData]=useState<any>(null);
+    const { user } = useAuth();
+
+      useEffect(() => {
+          const fetchPatientData = async () => {
+            if (user) {
+              try {
+                const { data, error } = await supabase
+                  .from('patients')
+                  .select('*')
+                  .eq('user_id', user.id)
+                  .single();
+      
+                if (error) {
+                  console.error('Error fetching patient data:', error);
+                } else if (data) {
+                  setPatientData(data);
+                  console.log('Patient data loaded:', data);
+                }
+              } catch (err) {
+                console.error('Error:', err);
+              }
+            }
+          };
+      
+          fetchPatientData();
+        }, [user]);
+      
+        useEffect(() => {
+           if (patientData) {
+             console.log('=== PATIENT DATA UPDATED ===');
+             console.log('Patient ID:', patientData.id);
+           }
+         }, [patientData]);
 
     const handleSidebarClick = (item: string) => {
         switch (item) {
@@ -51,8 +88,8 @@ const Feedback: React.FC<FeedbackProps> = ({
             case 'logout':
                 onLogout();
                 break;
-            case 'message':
-                console.log('Navigate to messages');
+            case 'profile-icon':
+                onNavigateToPatientInfo(patientData?.id);
                 break;
             case 'settings':
                 console.log('Navigate to settings');
@@ -69,6 +106,7 @@ const Feedback: React.FC<FeedbackProps> = ({
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         setSubmitted(true);
+        alert('Feedback submitted successfully!');
     };
 
     return (
@@ -90,12 +128,12 @@ const Feedback: React.FC<FeedbackProps> = ({
                                 Tell us how your appointment experience felt so we can keep improving care, scheduling, and follow-up support.
                             </p>
                         </div>
-                        <button
+                        {/* <button
                             onClick={onBack}
                             className="px-5 py-3 rounded-xl border border-slate-200 bg-white text-slate-700 font-medium hover:border-blue-300 hover:text-blue-700 transition-colors"
                         >
                             Back to Dashboard
-                        </button>
+                        </button> */}
                     </div>
 
                     <div className="grid grid-cols-1 xl:grid-cols-[1.4fr_0.9fr] gap-8">
@@ -127,6 +165,7 @@ const Feedback: React.FC<FeedbackProps> = ({
                                             onClick={() => setRating(value)}
                                             onMouseEnter={() => setHoverRating(value)}
                                             onMouseLeave={() => setHoverRating(0)}
+                                            
                                             className="transition-transform hover:scale-110 focus:outline-none"
                                             aria-label={`Rate ${value} star${value > 1 ? 's' : ''}`}
                                         >
@@ -199,6 +238,7 @@ const Feedback: React.FC<FeedbackProps> = ({
                                             {[1, 2, 3, 4, 5].map((value) => (
                                                 <svg
                                                     key={value}
+                                                    
                                                     className={`w-6 h-6 ${value <= rating ? 'text-amber-400' : 'text-slate-600'}`}
                                                     viewBox="0 0 24 24"
                                                     fill="currentColor"

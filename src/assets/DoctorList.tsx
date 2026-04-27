@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import doctorbg from './doctorbg.jpg';
 import Sidebar from './Sidebar';
-
+import { useEffect } from 'react';
+import { supabase } from '../../client/superbase';
+import { useAuth } from '../contexts/AuthContext';
 interface Doctor {
   id: number;
   name: string;
@@ -27,12 +29,47 @@ interface DoctorListProps {
   onNavigateToHistory?: () => void;
   onNavigateToFeedback?: () => void;
   onLogout?: () => void;
+  onNavigateToPatientInfo?: (patientId: string) => void;
 }
 
-const DoctorList: React.FC<DoctorListProps> = ({ onNavigateToOverview, onNavigateToAppointment, onNavigateToReport, onNavigateToHistory, onNavigateToFeedback, onLogout }) => {
+const DoctorList: React.FC<DoctorListProps> = ({ onNavigateToOverview, onNavigateToAppointment, onNavigateToReport, onNavigateToHistory, onNavigateToFeedback, onLogout, onNavigateToPatientInfo }) => {
+  const { user } = useAuth();
   const [selectedDoctor, setSelectedDoctor] = useState<number | null>(null);
   const [activeMenuItem, setActiveMenuItem] = useState<string>('doctors');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(false);
+  const [patientData, setPatientData] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchPatientData = async () => {
+      if (user) {
+        try {
+          const { data, error } = await supabase
+            .from('patients')
+            .select('*')
+            .eq('user_id', user.id)
+            .single();
+
+          if (error) {
+            console.error('Error fetching patient data:', error);
+          } else if (data) {
+            setPatientData(data);
+            console.log('Patient data loaded:', data);
+          }
+        } catch (err) {
+          console.error('Error:', err);
+        }
+      }
+    };
+
+    fetchPatientData();
+  }, [user]);
+
+  useEffect(() => {
+     if (patientData) {
+       console.log('=== PATIENT DATA UPDATED ===');
+       console.log('Patient ID:', patientData.id);
+     }
+   }, [patientData]);
 
   const handleBookAppointment = () => {
     onNavigateToAppointment?.();
@@ -41,7 +78,7 @@ const DoctorList: React.FC<DoctorListProps> = ({ onNavigateToOverview, onNavigat
   const handleSidebarClick = (item: string) => {
     setActiveMenuItem(item);
 
-    // Handle navigation logic
+
     switch (item) {
       case 'overview':
         onNavigateToOverview?.();
@@ -63,6 +100,9 @@ const DoctorList: React.FC<DoctorListProps> = ({ onNavigateToOverview, onNavigat
         break;
       case 'reports':
         onNavigateToReport?.();
+        break;
+      case 'profile-icon':
+        onNavigateToPatientInfo?.(patientData?.id);
         break;
       case 'settings':
         console.log('Navigate to settings');
