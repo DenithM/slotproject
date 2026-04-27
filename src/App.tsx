@@ -44,19 +44,20 @@ function App() {
     setSelectedAppointment(appointment);
     setCurrentView('viewdetails');
   };
+  
+  const handleRescheduleAppointment = (appointment: any) => {
+    setSelectedAppointment(appointment);
+    setCurrentView('appointment');
+  };
+  
   const handleLogout = () => {
     setCurrentView('login');
   };
-  // const handleRescheduleAppointment = () => {
-  //   // Handle reschedule logic - could navigate to appointment booking with pre-filled data
-  //   setCurrentView('appointment');
-  // };
 
-  // const handleCancelAppointment = () => {
-  //   // Handle cancel logic - could show confirmation and refresh dashboard
-  //   setRefreshTrigger(prev => prev + 1);
-  //   setCurrentView('dashboard');
-  // };
+  const handleCancelAppointment = () => {
+    setRefreshTrigger(prev => prev + 1);
+    setCurrentView('dashboard');
+  };
 
   return (
     <AuthProvider>
@@ -76,6 +77,7 @@ function App() {
             onRefreshDashboard={() => setRefreshTrigger(prev => prev + 1)}
             onLogout={handleLogout}
             onNavigateToPatientInfo={handleNavigateToPatientInfo}
+            appointmentToReschedule={selectedAppointment ? { id: selectedAppointment.id } : null}
           />
         ) : currentView === 'doctorlist' ? (
           <DoctorList 
@@ -91,8 +93,8 @@ function App() {
           <ViewDetails 
             appointment={selectedAppointment} 
             onBack={handleBackToDashboard} 
-              // onReschedule={handleRescheduleAppointment}
-              // onCancel={handleCancelAppointment}
+            onReschedule={handleRescheduleAppointment}
+            onCancel={handleCancelAppointment}
             onNavigateToReport={handleNavigateToReport}
             onNavigateToDoctorList={() => setCurrentView('doctorlist')}
             onNavigateToHistory={handleNavigateToHistory}
