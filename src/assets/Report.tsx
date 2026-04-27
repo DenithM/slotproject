@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from './Sidebar';
+import { supabase } from '../../client/superbase';
+import { useAuth } from '../contexts/AuthContext';
+
 
 interface Report {
   id: string;
@@ -20,9 +23,10 @@ interface ReportProps {
   onNavigateToHistory?: () => void;
   onNavigateToFeedback?: () => void;
   onLogout?: () => void;
+  onNavigateToPatientInfo?: (patientId: string) => void;
 }
 
-const Report: React.FC<ReportProps> = ({ onNavigateToDashboard, onNavigateToAppointment, onNavigateToDoctorList, onNavigateToHistory, onNavigateToFeedback, onLogout }) => {
+const Report: React.FC<ReportProps> = ({ onNavigateToDashboard, onNavigateToAppointment, onNavigateToDoctorList, onNavigateToHistory, onNavigateToFeedback, onLogout, onNavigateToPatientInfo }) => {
   const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -32,6 +36,40 @@ const Report: React.FC<ReportProps> = ({ onNavigateToDashboard, onNavigateToAppo
   const filterStatus = 'all';
   const [activeMenuItem, setActiveMenuItem] = useState<string>('reports');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(false);
+  const [patientData, setPatientData] = useState<any>(null);
+  const { user } = useAuth();
+  
+useEffect(() => {
+          const fetchPatientData = async () => {
+            if (user) {
+              try {
+                const { data, error } = await supabase
+                  .from('patients')
+                  .select('*')
+                  .eq('user_id', user.id)
+                  .single();
+      
+                if (error) {
+                  console.error('Error fetching patient data:', error);
+                } else if (data) {
+                  setPatientData(data);
+                  console.log('Patient data loaded:', data);
+                }
+              } catch (err) {
+                console.error('Error:', err);
+              }
+            }
+          };
+      
+          fetchPatientData();
+        }, [user]);
+      
+        useEffect(() => {
+           if (patientData) {
+             console.log('=== PATIENT DATA UPDATED ===');
+             console.log('Patient ID:', patientData.id);
+           }
+         }, [patientData]);
 
   useEffect(() => {
     fetchReports();
@@ -436,6 +474,9 @@ const Report: React.FC<ReportProps> = ({ onNavigateToDashboard, onNavigateToAppo
         break;
       case 'logout':
         onLogout?.();
+        break;
+      case 'profile-icon':
+        onNavigateToPatientInfo?.(patientData?.id);
         break;
       default:
         console.log(`Navigating to: ${item}`);

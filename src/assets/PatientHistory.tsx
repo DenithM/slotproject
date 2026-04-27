@@ -34,6 +34,7 @@ interface PatientHistoryProps {
     onNavigateToFeedback: () => void;
     onNavigateToReport: () => void;
     onLogout: () => void;
+    onNavigateToPatientInfo: (patientId: string) => void;
     refreshTrigger?: number;
 }
 
@@ -45,6 +46,7 @@ const PatientHistory: React.FC<PatientHistoryProps> = ({
     onNavigateToFeedback,
     onNavigateToReport,
     onLogout,
+    onNavigateToPatientInfo,
     refreshTrigger
 }) => {
     const { user } = useAuth();
@@ -54,6 +56,40 @@ const PatientHistory: React.FC<PatientHistoryProps> = ({
     const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
     const [patient, setPatient] = useState<Patient | null>(null);
     const [showBill, setShowBill] = useState(false);
+    const [patientData, setPatientData] = useState<Patient | null>(null);
+    
+    useEffect(() => {
+              const fetchPatientData = async () => {
+                if (user) {
+                  try {
+                    const { data, error } = await supabase
+                      .from('patients')
+                      .select('*')
+                      .eq('user_id', user.id)
+                      .single();
+          
+                    if (error) {
+                      console.error('Error fetching patient data:', error);
+                    } else if (data) {
+                      setPatientData(data);
+                      console.log('Patient data loaded:', data);
+                    }
+                  } catch (err) {
+                    console.error('Error:', err);
+                  }
+                }
+              };
+          
+              fetchPatientData();
+            }, [user]);
+          
+            useEffect(() => {
+               if (patientData) {
+                 console.log('=== PATIENT DATA UPDATED ===');
+                 console.log('Patient ID:', patientData.id);
+               }
+             }, [patientData]);
+
 
     useEffect(() => {
         fetchData();
@@ -161,6 +197,9 @@ const PatientHistory: React.FC<PatientHistoryProps> = ({
                 break;
             case 'logout':
                 onLogout();
+                break;
+            case 'profile-icon':
+                onNavigateToPatientInfo?.(patientData?.id || '');
                 break;
             default:
                 console.log(`Navigating to: ${item}`);

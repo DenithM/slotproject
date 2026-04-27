@@ -62,7 +62,7 @@ function App() {
     <AuthProvider>
       <div>
         {currentView === 'login' ? (
-          <Login onSwitchToRegister={() => setCurrentView('register')} onLoginSuccess={() => setCurrentView('dashboard')} />
+          <Login onSwitchToRegister={() => setCurrentView('register')} onLoginSuccess={() => setCurrentView('dashboard')} onNavigateToPatientInfo={handleNavigateToPatientInfo} />
         ) : currentView === 'register' ? (
           <Register onSwitchToLogin={() => setCurrentView('login')} />
         ) : currentView === 'appointment' ? (
@@ -75,6 +75,7 @@ function App() {
             onNavigateToFeedback={handleNavigateToFeedback}
             onRefreshDashboard={() => setRefreshTrigger(prev => prev + 1)}
             onLogout={handleLogout}
+            onNavigateToPatientInfo={handleNavigateToPatientInfo}
           />
         ) : currentView === 'doctorlist' ? (
           <DoctorList 
@@ -84,6 +85,7 @@ function App() {
             onNavigateToHistory={handleNavigateToHistory}
             onNavigateToFeedback={handleNavigateToFeedback}
             onLogout={handleLogout}
+            onNavigateToPatientInfo={handleNavigateToPatientInfo}
           />
         ) : currentView === 'viewdetails' ? (
           <ViewDetails 
@@ -96,9 +98,15 @@ function App() {
             onNavigateToHistory={handleNavigateToHistory}
             onNavigateToFeedback={handleNavigateToFeedback}
             onLogout={handleLogout}
+            
           />
         ) : currentView === 'patientinfo' ? (
           <Patientinfo 
+            onNavigateToAppointment={() => setCurrentView('appointment')}
+            onNavigateToReport={handleNavigateToReport}
+            onNavigateToHistory={handleNavigateToHistory}
+            onNavigateToFeedback={handleNavigateToFeedback}
+            onLogout={handleLogout}
             onBack={handleBackToDashboard}
             onSave={() => {
               setRefreshTrigger(prev => prev + 1);
@@ -114,6 +122,7 @@ function App() {
             onNavigateToHistory={handleNavigateToHistory}
             onNavigateToFeedback={handleNavigateToFeedback}
             onLogout={handleLogout}
+            onNavigateToPatientInfo={handleNavigateToPatientInfo}
           />
         ) : currentView === 'feedback' ? (
           <Feedback 
@@ -124,6 +133,7 @@ function App() {
             onNavigateToHistory={handleNavigateToHistory}
             onNavigateToReport={handleNavigateToReport}
             onLogout={handleLogout}
+            onNavigateToPatientInfo={handleNavigateToPatientInfo}
           />
         ) : currentView === 'history' ? (
           <PatientHistory 
@@ -135,6 +145,7 @@ function App() {
             onNavigateToReport={handleNavigateToReport}
             refreshTrigger={refreshTrigger}
             onLogout={handleLogout}
+            onNavigateToPatientInfo={handleNavigateToPatientInfo}
           />
         ) : (
           <Dashboard 

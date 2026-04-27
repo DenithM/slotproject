@@ -6,17 +6,13 @@ import { supabase } from "../../client/superbase";
 
 import loginImage from "./loginimg.jpg";
 
+interface LoginProps {
+  onSwitchToRegister: () => void;
+  onLoginSuccess: () => void;
+  onNavigateToPatientInfo?: () => void;
+}
 
-
-function Login({ onSwitchToRegister, onLoginSuccess }: { 
-
-  onSwitchToRegister: () => void; 
-
-  onLoginSuccess: () => void; 
-
-}) {
-
-
+function Login({ onSwitchToRegister, onLoginSuccess, onNavigateToPatientInfo }: LoginProps) {
 
   const formik = useFormik({
 
@@ -66,7 +62,27 @@ function Login({ onSwitchToRegister, onLoginSuccess }: {
 
         alert("Login successful");
 
-        onLoginSuccess();
+        try {
+          const { data: patientData, error } = await supabase
+            .from('patients')
+            .select('*')
+            .eq('user_id', data.user.id)
+            .single();
+
+          if (error && error.code !== 'PGRST116') { // PGRST116 means no rows returned
+            console.error('Error checking patient data:', error);
+            onLoginSuccess(); // Default to dashboard on error
+          } else if (patientData) {
+            
+            onLoginSuccess();
+          } else {
+            
+            onNavigateToPatientInfo?.();
+          }
+        } catch (err) {
+          console.error('Error checking patient data:', err);
+          onLoginSuccess(); // Default to dashboard on error
+        }
 
       }
 

@@ -29,7 +29,8 @@ const Appointment: React.FC<{
   appointmentToReschedule?: { id: string } | null;
   onNavigateToViewDetails?: (appointment: any) => void;
   onRefreshDashboard?: () => void;
-}> = ({ onBack, onNavigateToReport, onNavigateToDoctorList, onNavigateToHistory, onNavigateToFeedback, onLogout, appointmentToReschedule, onNavigateToViewDetails, onRefreshDashboard }) => {
+  onNavigateToPatientInfo?: (patientId: string) => void;
+}> = ({ onBack, onNavigateToReport, onNavigateToDoctorList, onNavigateToHistory, onNavigateToFeedback, onLogout, appointmentToReschedule, onNavigateToViewDetails, onRefreshDashboard, onNavigateToPatientInfo }) => {
   const { user } = useAuth();
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [loading, setLoading] = useState(true);
@@ -48,11 +49,43 @@ const Appointment: React.FC<{
   const [rescheduleLoading, setRescheduleLoading] = useState(false);
   const isRescheduleMode = Boolean(appointmentToReschedule?.id);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(false);
-
+  const [patientData, setPatientData] = useState<any>(null);
   useEffect(() => {
     fetchDoctors();
   }, []);
 
+  
+    useEffect(() => {
+      const fetchPatientData = async () => {
+        if (user) {
+          try {
+            const { data, error } = await supabase
+              .from('patients')
+              .select('*')
+              .eq('user_id', user.id)
+              .single();
+  
+            if (error) {
+              console.error('Error fetching patient data:', error);
+            } else if (data) {
+              setPatientData(data);
+              console.log('Patient data loaded:', data);
+            }
+          } catch (err) {
+            console.error('Error:', err);
+          }
+        }
+      };
+  
+      fetchPatientData();
+    }, [user]);
+  
+    useEffect(() => {
+       if (patientData) {
+         console.log('=== PATIENT DATA UPDATED ===');
+         console.log('Patient ID:', patientData.id);
+       }
+     }, [patientData]);
   useEffect(() => {
     const loadAppointmentForReschedule = async () => {
       if (!appointmentToReschedule?.id) {
@@ -365,11 +398,47 @@ const Appointment: React.FC<{
     }
   };
 
-  const timeSlots = [
+  const getAllTimeSlots = () => [
     '09:00 AM', '09:30 AM', '10:00 AM', '10:30 AM',
     '11:00 AM', '11:30 AM', '02:00 PM', '02:30 PM',
     '03:00 PM', '03:30 PM', '04:00 PM', '04:30 PM'
   ];
+
+  const getFutureTimeSlots = () => {
+    const now = new Date();
+    const currentTime = now.getHours() * 60 + now.getMinutes();
+    
+    const allSlots = getAllTimeSlots();
+    
+    
+    if (now.getHours() >= 16 || (now.getHours() === 16 && now.getMinutes() > 30)) {
+      return allSlots;
+    }
+    
+    return allSlots.filter(slot => {
+      const [time, period] = slot.split(' ');
+      const [hours, minutes] = time.split(':').map(Number);
+      let slotHours = hours;
+      
+      if (period === 'PM' && hours !== 12) {
+        slotHours += 12;
+      } else if (period === 'AM' && hours === 12) {
+        slotHours = 0;
+      }
+      
+      const slotTime = slotHours * 60 + minutes;
+      
+      
+      if (formData.date && new Date(formData.date).toDateString() === now.toDateString()) {
+        return slotTime > currentTime;
+      }
+      
+    
+      return true;
+    });
+  };
+
+  const timeSlots = getFutureTimeSlots();
 
   const handleSidebarClick = (item: string) => {
     setActiveMenuItem(item);
@@ -381,6 +450,7 @@ const Appointment: React.FC<{
       case 'feedback': onNavigateToFeedback?.(); break;
       case 'reports': onNavigateToReport?.(); break;
       case 'logout': onLogout?.(); break;
+      case 'profile-icon': onNavigateToPatientInfo?.(patientData?.id); break;
       default: console.log(`Navigating to: ${item}`);
     }
   };
