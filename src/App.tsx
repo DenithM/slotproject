@@ -46,6 +46,7 @@ function App() {
   };
   
   const handleRescheduleAppointment = (appointment: any) => {
+    setRefreshTrigger(prev => prev + 1);
     setSelectedAppointment(appointment);
     setCurrentView('appointment');
   };
@@ -57,6 +58,11 @@ function App() {
   const handleCancelAppointment = () => {
     setRefreshTrigger(prev => prev + 1);
     setCurrentView('dashboard');
+  };
+
+  const handleNavigateToAppointment = () => {
+    setSelectedAppointment(null);
+    setCurrentView('appointment');
   };
 
   return (
@@ -82,7 +88,7 @@ function App() {
         ) : currentView === 'doctorlist' ? (
           <DoctorList 
             onNavigateToOverview={() => setCurrentView('dashboard')} 
-            onNavigateToAppointment={() => setCurrentView('appointment')}
+            onNavigateToAppointment={handleNavigateToAppointment}
             onNavigateToReport={handleNavigateToReport}
             onNavigateToHistory={handleNavigateToHistory}
             onNavigateToFeedback={handleNavigateToFeedback}
@@ -104,7 +110,7 @@ function App() {
           />
         ) : currentView === 'patientinfo' ? (
           <Patientinfo 
-            onNavigateToAppointment={() => setCurrentView('appointment')}
+            onNavigateToAppointment={handleNavigateToAppointment}
             onNavigateToReport={handleNavigateToReport}
             onNavigateToHistory={handleNavigateToHistory}
             onNavigateToFeedback={handleNavigateToFeedback}
@@ -119,7 +125,7 @@ function App() {
         ) : currentView === 'report' ? (
           <Report 
             onNavigateToDashboard={handleBackToDashboard}
-            onNavigateToAppointment={() => setCurrentView('appointment')}
+            onNavigateToAppointment={handleNavigateToAppointment}
             onNavigateToDoctorList={() => setCurrentView('doctorlist')}
             onNavigateToHistory={handleNavigateToHistory}
             onNavigateToFeedback={handleNavigateToFeedback}
@@ -130,7 +136,7 @@ function App() {
           <Feedback 
             onBack={handleBackToDashboard}
             onNavigateToDashboard={handleBackToDashboard}
-            onNavigateToAppointment={() => setCurrentView('appointment')}
+            onNavigateToAppointment={handleNavigateToAppointment}
             onNavigateToDoctorList={() => setCurrentView('doctorlist')}
             onNavigateToHistory={handleNavigateToHistory}
             onNavigateToReport={handleNavigateToReport}
@@ -141,7 +147,7 @@ function App() {
           <PatientHistory 
             onBack={handleBackToDashboard}
             onNavigateToDashboard={handleBackToDashboard}
-            onNavigateToAppointment={() => setCurrentView('appointment')}
+            onNavigateToAppointment={handleNavigateToAppointment}
             onNavigateToDoctorList={() => setCurrentView('doctorlist')}
             onNavigateToFeedback={handleNavigateToFeedback}
             onNavigateToReport={handleNavigateToReport}
@@ -152,7 +158,7 @@ function App() {
         ) : (
           <Dashboard 
             key={`dashboard-${refreshTrigger}`} // Force re-render when refreshTrigger changes
-            onNavigateToAppointment={() => setCurrentView('appointment')} 
+            onNavigateToAppointment={handleNavigateToAppointment} 
             onNavigateToDoctorList={() => setCurrentView('doctorlist')} 
             onNavigateToViewDetails={handleNavigateToViewDetails}
             onNavigateToPatientInfo={handleNavigateToPatientInfo}
