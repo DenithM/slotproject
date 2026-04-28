@@ -938,7 +938,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment, onNaviga
 
         {/* Right Sidebar */}
 
-        <div className="hidden xl:block w-80 bg-gradient-to-b from-white to-gray-50 p-6 border-l border-gray-100 fixed right-0 top-0 h-full overflow-y-auto">
+        <div className="hidden xl:block w-65 bg-gradient-to-b from-white to-gray-50 p-6 border-l border-gray-100 fixed right-0 top-0 h-full overflow-y-auto">
 
           {/* Patient Information Card */}
           {/* {patientData ? (
