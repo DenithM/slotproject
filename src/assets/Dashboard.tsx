@@ -683,7 +683,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment, onNaviga
 
           {/* Greeting */}
         <div className="mb-6 sm:mb-8">
-          <h1 className="text-2xl sm:text-3xl font-light text-gray-800 mb-2">Hi {patientData?.first_name || 'User'}</h1>
+          <h1 className="text-2xl sm:text-3xl font-light text-gray-800 mb-2">Welcome {patientData?.first_name || 'User'}! You look nice today</h1>
           <p className="text-gray-600 text-sm sm:text-base">Here's your health overview for today.</p>
         </div>
 
@@ -691,7 +691,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment, onNaviga
 
           {/* Banner */}
 
-          <div className="bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 rounded-2xl p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8 text-white relative overflow-hidden shadow-2xl ">
+          <div className="bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 rounded-2xl p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8 text-white relative overflow-hidden shadow-2xl w-[80%]">
 
             <div className="absolute top-0 right-0 w-32 sm:w-48 lg:w-64 h-32 sm:h-48 lg:h-64 bg-white opacity-5 rounded-full -mr-16 sm:-mr-24 lg:-mr-32 -mt-16 sm:-mt-24 lg:-mt-32"></div>
 
@@ -812,7 +812,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment, onNaviga
 
           {/* Appointments Table */}
 
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden w-[80%]">
 
             <div className="p-4 sm:p-6 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
 
@@ -938,7 +938,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToAppointment, onNaviga
 
         {/* Right Sidebar */}
 
-        <div className="hidden xl:block w-80 bg-gradient-to-b from-white to-gray-50 p-6 border-l border-gray-100">
+        <div className="hidden xl:block w-80 bg-gradient-to-b from-white to-gray-50 p-6 border-l border-gray-100 fixed right-0 top-0 h-full overflow-y-auto">
 
           {/* Patient Information Card */}
           {/* {patientData ? (
