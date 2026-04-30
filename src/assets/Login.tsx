@@ -10,9 +10,10 @@ interface LoginProps {
   onSwitchToRegister: () => void;
   onLoginSuccess: () => void;
   onNavigateToPatientInfo?: () => void;
+  onNavigateToGetstarted?: () => void;
 }
 
-function Login({ onSwitchToRegister, onLoginSuccess, onNavigateToPatientInfo }: LoginProps) {
+function Login({ onSwitchToRegister, onLoginSuccess, onNavigateToPatientInfo, onNavigateToGetstarted }: LoginProps) {
 
   const formik = useFormik({
 
@@ -71,13 +72,15 @@ function Login({ onSwitchToRegister, onLoginSuccess, onNavigateToPatientInfo }: 
 
           if (error && error.code !== 'PGRST116') { // PGRST116 means no rows returned
             console.error('Error checking patient data:', error);
-            onLoginSuccess(); // Default to dashboard on error
+            onLoginSuccess(); 
           } else if (patientData) {
             
             onLoginSuccess();
           } else {
             
-            onNavigateToPatientInfo?.();
+             onNavigateToPatientInfo?.();
+           
+
           }
         } catch (err) {
           console.error('Error checking patient data:', err);
