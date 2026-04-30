@@ -82,11 +82,11 @@ const Patientinfo: React.FC<PatientinfoProps> = ({
   onBack, 
   onSave, 
   patientId, 
-  onNavigateToAppointment, 
-  onNavigateToReport, 
-  onNavigateToHistory, 
-  onNavigateToFeedback, 
-  onLogout 
+  // onNavigateToAppointment, 
+  // onNavigateToReport, 
+  // onNavigateToHistory, 
+  // onNavigateToFeedback, 
+  // onLogout 
 }) => {
 
   const [formData, setFormData] = useState<PatientFormData>({

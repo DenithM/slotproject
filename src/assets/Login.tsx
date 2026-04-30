@@ -13,7 +13,7 @@ interface LoginProps {
   onNavigateToGetstarted?: () => void;
 }
 
-function Login({ onSwitchToRegister, onLoginSuccess, onNavigateToPatientInfo, onNavigateToGetstarted }: LoginProps) {
+function Login({ onSwitchToRegister, onLoginSuccess, onNavigateToPatientInfo}: LoginProps) {
 
   const formik = useFormik({
 
