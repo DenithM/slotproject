@@ -93,7 +93,7 @@ const Getstartedpage: React.FC<GetstartedpageProps> = ({ onNavigateToPatientInfo
       </div> */}
     <div className="flex flex-col items-center justify-center h-screen">
       <div className="mb-8">
-        <h1>  <img src='/public/family.jpg' alt='image'/></h1>
+        <h1>  <img src='/family.jpg' alt='image'/></h1>
       </div>
       <h1 className=" font-bold mb-4 text-blue-600">Start Your Journey to Better Health Today</h1>
      <h2 className="text-lg text-gray-600 mb-8">Create your account to book appointments, consult with doctors, and manage your health records easily.</h2>
