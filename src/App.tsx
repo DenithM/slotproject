@@ -10,10 +10,11 @@ import Patientinfo from "./assets/Patientinfo";
 import Report from "./assets/Report";
 import Feedback from "./assets/Feedback";
 import PatientHistory from "./assets/PatientHistory";
+import Getstartedpage from "./assets/Getstartedpage";
 import { AuthProvider } from "./contexts/AuthContext";
 
 function App() {
-  const [currentView, setCurrentView] = useState<'login' | 'register' | 'dashboard' | 'appointment' | 'doctorlist' | 'viewdetails' | 'patientinfo' | 'report' | 'feedback' | 'history'>('login');
+  const [currentView, setCurrentView] = useState<'login' | 'register' | 'getstarted' | 'dashboard' | 'appointment' | 'doctorlist' | 'viewdetails' | 'patientinfo' | 'report' | 'feedback' | 'history'>('login');
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [selectedAppointment, setSelectedAppointment] = useState<any>(null);
   const [currentPatientId, setCurrentPatientId] = useState<string | null>(null);
@@ -69,7 +70,12 @@ function App() {
     <AuthProvider>
       <div>
         {currentView === 'login' ? (
-          <Login onSwitchToRegister={() => setCurrentView('register')} onLoginSuccess={() => setCurrentView('dashboard')} onNavigateToPatientInfo={handleNavigateToPatientInfo} />
+          <Login onSwitchToRegister={() => setCurrentView('register')} onLoginSuccess={() => setCurrentView('getstarted')} onNavigateToPatientInfo={handleNavigateToPatientInfo} />
+        ) : currentView === 'getstarted' ? (
+          <Getstartedpage 
+            onNavigateToPatientInfo={handleNavigateToPatientInfo} 
+            onNavigateToDashboard={() => setCurrentView('dashboard')} 
+          />
         ) : currentView === 'register' ? (
           <Register onSwitchToLogin={() => setCurrentView('login')} />
         ) : currentView === 'appointment' ? (
@@ -172,6 +178,20 @@ function App() {
         )}
       </div>
     </AuthProvider>
+//     <BrowserRouter>
+// <Routes>
+// <Route path="/" element={<Login />} />
+// <Route path="/register" element={<Register />} />
+// <Route path="/dashboard" element={<Dashboard />} />
+// <Route path="/appointment" element={<Appointment />} />
+// <Route path="/doctorlist" element={<DoctorList />} />
+// <Route path="/viewdetails" element={<ViewDetails />} />
+// <Route path="/patientinfo" element={<Patientinfo />} />
+// <Route path="/report" element={<Report />} />
+// <Route path="/feedback" element={<Feedback />} />
+// <Route path="/history" element={<PatientHistory />} />
+// </Routes>
+// </BrowserRouter>
   )
 }
 

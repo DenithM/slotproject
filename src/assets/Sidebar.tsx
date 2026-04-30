@@ -329,6 +329,16 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem, onItemClick, isCollapsed 
           </ul>
 
         </nav>
+        {/* <Link to="/Dashboard">Dashboard</Link>
+        <Link to="/Appointment">Appointment</Link>
+        // <Link to="/doctorlist">doctorlist</Link>
+        // <Link to="/viewdetails">viewdetails</Link>
+        // <Link to="/patientinfo">patientinfo</Link>
+        // <Link to="/report">report</Link>
+        // <Link to="/feedback">feedback</Link>
+        // <Link to="/history">history</Link>
+       
+        */}
 
       </div>
 
